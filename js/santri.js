@@ -11,6 +11,7 @@ import {
 // Variable Penyimpanan Sementara dari Firebase
 let listKelas = [];       // Menyimpan daftar dokumen kelas
 let listSantri = [];      // Menyimpan daftar santri pada kelas yang dipilih
+let listGuru = [];        // Menyimpan daftar guru dari database
 
 let selectedKelasId = null;
 let selectedKelasData = null;
@@ -32,6 +33,28 @@ async function renderMainView() {
 /* ===================================================
    1. LOGIKA KELAS (FIREBASE)
    =================================================== */
+
+// Load Data Guru dari Collection "guru" di Firestore
+async function loadGuruFromFirebase() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "guru"));
+        listGuru = [];
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.nama) {
+                listGuru.push({
+                    id: docSnap.id,
+                    nama: data.nama
+                });
+            }
+        });
+
+        // Sort Nama Guru A-Z
+        listGuru.sort((a, b) => a.nama.localeCompare(b.nama));
+    } catch (error) {
+        console.error("Gagal mengambil data guru:", error);
+    }
+}
 
 // Load Data Kelas dari Collection "kelas" di Firestore & Hitung Santri Realtime
 async function loadKelasFromFirebase() {
@@ -60,7 +83,6 @@ async function loadKelasFromFirebase() {
         const querySnapshot = await getDocs(collection(db, "kelas"));
         listKelas = [];
         
-        // Mengambil seluruh data kelas & jumlah santri tiap kelas secara paralel
         const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const santriSnap = await getDocs(collection(db, "kelas", docSnap.id, "santri"));
@@ -75,7 +97,7 @@ async function loadKelasFromFirebase() {
 
         listKelas = await Promise.all(kelasPromises);
 
-        // Sorting Angka Alami (Natural Numerical Sort: Kelas 1, Kelas 2, Kelas 10, dst)
+        // Sorting Angka Alami (Natural Numerical Sort: Kelas 1, Kelas 2, Kelas 10)
         listKelas.sort((a, b) => {
             return a.namaKelas.localeCompare(b.namaKelas, undefined, { 
                 numeric: true, 
@@ -113,21 +135,38 @@ async function loadKelasFromFirebase() {
     }
 }
 
-// Open Modal Tambah / Edit Kelas
-window.openModalKelas = function(isEdit = false) {
+// Open Modal Tambah / Edit Kelas (Populate List Guru Ke Dropdown)
+window.openModalKelas = async function(isEdit = false) {
     const modal = document.getElementById("modal-kelas");
     const title = document.getElementById("modal-kelas-title");
     const inputNama = document.getElementById("nama-kelas-input");
-    const inputWali = document.getElementById("wali-kelas-input");
+    const selectWali = document.getElementById("wali-kelas-input");
+
+    // Load data guru terbaru dari database
+    await loadGuruFromFirebase();
+
+    // Populate Option Pilihan Guru
+    let waliOptions = `<option value="">-- Pilih Wali Kelas --</option>`;
+    listGuru.forEach((guru) => {
+        waliOptions += `<option value="${guru.nama}">${guru.nama}</option>`;
+    });
+    selectWali.innerHTML = waliOptions;
 
     if (isEdit && selectedKelasData) {
         title.innerText = "Edit Data Kelas";
         inputNama.value = selectedKelasData.namaKelas || "";
-        inputWali.value = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
+
+        const currentWali = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
+        
+        // Jika nama wali terdahulu tidak ada di list guru saat ini, tambahkan secara dinamis agar tidak hilang
+        if (currentWali && !listGuru.some(g => g.nama === currentWali)) {
+            selectWali.innerHTML += `<option value="${currentWali}">${currentWali}</option>`;
+        }
+        selectWali.value = currentWali;
     } else {
         title.innerText = "Tambah Kelas Baru";
         inputNama.value = "";
-        inputWali.value = "";
+        selectWali.value = "";
     }
 
     if (modal) modal.classList.add("active");
@@ -142,9 +181,9 @@ window.closeModalKelas = function() {
 window.saveKelasData = async function(event) {
     event.preventDefault();
     const inputNama = document.getElementById("nama-kelas-input");
-    const inputWali = document.getElementById("wali-kelas-input");
+    const selectWali = document.getElementById("wali-kelas-input");
     const namaKelas = inputNama.value.trim();
-    const waliKelas = inputWali.value.trim();
+    const waliKelas = selectWali.value.trim();
     
     if (!namaKelas) return;
 
@@ -173,7 +212,7 @@ window.saveKelasData = async function(event) {
     }
 };
 
-// Hapus Kelas beserta Akses Sub-menu
+// Hapus Kelas
 window.deleteKelasData = async function() {
     if (!selectedKelasId) return;
 
