@@ -18,9 +18,9 @@ let selectedKelasId = null;
 let selectedKelasData = null;
 let selectedSantriId = null;
 
-// --- PENANGANAN INISIALISASI AMAN (Mencegah Bentrok dengan absensi.js) ---
+// --- PENANGANAN INISIALISASI AMAN (Mencegah Bentrok & Race Condition Template) ---
 function initSantriView() {
-    // Hanya jalankan jika elemen modul Santri ada di DOM
+    // KUNCI PERBAIKAN: Hanya jalankan jika elemen UNIK halaman santri (#view-santri) ada di DOM
     if (document.getElementById("view-santri")) {
         renderMainView();
     }
@@ -32,6 +32,7 @@ if (document.readyState === "loading") {
     initSantriView();
 }
 
+// Mendengarkan event saat layout template selesai di-render oleh main.js
 document.addEventListener("layoutReady", function () {
     initSantriView();
 });
@@ -84,18 +85,18 @@ async function loadKelasFromFirebase() {
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
-    // Jika tidak berada di modul santri, hentikan eksekusi
-    if (!viewSantri || !gridContainer) return;
+    // Validasi Keberadaan Halaman Santri
+    if (!viewSantri || !viewKelas || !gridContainer) return;
 
-    // Atur Toolbar
+    // Atur Toolbar Santri
     if (btnBack) btnBack.classList.add("hidden");
     if (pageTitle) pageTitle.innerText = "Data Santri Per Kelas";
     if (pageSubtitle) pageSubtitle.innerText = "Pilih kelas untuk melihat atau mengelola data santri.";
     if (btnTambahKelas) btnTambahKelas.classList.remove("hidden");
     if (btnTambahSantri) btnTambahSantri.classList.add("hidden");
 
-    if (viewKelas) viewKelas.classList.remove("hidden");
-    if (viewSantri) viewSantri.classList.add("hidden");
+    viewKelas.classList.remove("hidden");
+    viewSantri.classList.add("hidden");
 
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
@@ -237,7 +238,7 @@ window.deleteKelasData = async function() {
     try {
         await deleteDoc(doc(db, "kelas", selectedKelasId));
         alert("Kelas berhasil dihapus.");
-        goBackToKelasList();
+        window.goBackToKelasList();
     } catch (error) {
         console.error("Gagal menghapus kelas:", error);
         alert("Gagal menghapus data kelas.");
@@ -418,7 +419,7 @@ window.closeDetailSantriModal = function() {
     if (modal) modal.classList.remove("active");
 };
 
-// Fungsi helper untuk memuat dropdown pilihan kelas di dalam form santri
+// Helper untuk memuat dropdown pilihan kelas di dalam form santri
 async function populateKelasSelectForSantri(selectedTargetKelasId = "") {
     const selectKelas = document.getElementById("santri-kelas-target");
     if (!selectKelas) return;
