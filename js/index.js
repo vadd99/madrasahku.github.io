@@ -26,7 +26,6 @@ async function loadDashboardData() {
         let grandTotalSantri = 0;
         let listKelas = [];
 
-        // Hitung total santri per kelas secara asynchronous
         const kelasPromises = kelasSnap.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const santriSnap = await getDocs(collection(db, "kelas", docSnap.id, "santri"));
@@ -34,10 +33,15 @@ async function loadDashboardData() {
             
             grandTotalSantri += countSantri;
 
+            // Jika wali kelas terisi di database, gunakan namanya. Jika kosong/-, tulis "Belum ditentukan"
+            const waliKelasName = (data.waliKelas && data.waliKelas.trim() !== "" && data.waliKelas !== "-") 
+                ? data.waliKelas 
+                : "Belum ditentukan";
+
             return {
                 id: docSnap.id,
                 namaKelas: data.namaKelas || data.nama || "Kelas",
-                waliKelas: data.waliKelas && data.waliKelas !== "-" ? data.waliKelas : "Aktif",
+                waliKelas: waliKelasName,
                 totalSantri: countSantri
             };
         });
@@ -68,7 +72,7 @@ async function loadDashboardData() {
                 htmlCards += `
                     <div class="class-card">
                         <div class="class-card-top">
-                            <span class="class-badge" title="Wali Kelas">${kelas.waliKelas}</span>
+                            <span class="class-badge" title="Wali Kelas: ${kelas.waliKelas}">${kelas.waliKelas}</span>
                             <i data-lucide="book-open" class="class-card-icon"></i>
                         </div>
                         <div class="class-name">${kelas.namaKelas}</div>

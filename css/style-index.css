@@ -2,9 +2,7 @@
 .dashboard-single-screen {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    gap: 16px;
+    gap: 16px; /* Jarak antar bagian konsisten dan tidak merenggang berlebihan */
 }
 
 /* Welcome Strip (Compact) */
@@ -103,8 +101,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    flex: 1;
-    justify-content: center;
 }
 
 .section-header {
@@ -133,7 +129,7 @@
     color: var(--text-light);
 }
 
-/* 6 Class Cards Sejajar */
+/* Grid Card Kelas */
 .stats-grid-classes {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -167,14 +163,18 @@
 }
 
 .class-badge {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
     color: var(--primary-text);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     background-color: var(--primary-light);
     padding: 2px 6px;
     border-radius: 4px;
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Agar nama wali kelas yang panjang/teks 'Belum ditentukan' terpotong rapi dengan titik-titik */
 }
 
 .class-card-icon {
