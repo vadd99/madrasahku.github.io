@@ -51,7 +51,7 @@ async function loadGuruFromFirebase() {
                         <div class="guru-text-info">
                             <div class="guru-name">${guru.nama}</div>
                             <div>
-                                <span class="guru-class-badge">Pengampu: ${guru.kelasAjar || 'Belum Ditentukan'}</span>
+                                <span class="guru-class-badge">${guru.kelasAjar || 'Belum Ditentukan'}</span>
                             </div>
                         </div>
                     </div>
