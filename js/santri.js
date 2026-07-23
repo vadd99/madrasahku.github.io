@@ -13,7 +13,7 @@ let listKelas = [];       // Menyimpan daftar dokumen kelas
 let listSantri = [];      // Menyimpan daftar santri pada kelas yang dipilih
 
 let selectedKelasId = null;
-let selectedKelasNama = "";
+let selectedKelasData = null;
 let selectedSantriId = null;
 
 document.addEventListener("layoutReady", function () {
@@ -33,7 +33,7 @@ async function renderMainView() {
    1. LOGIKA KELAS (FIREBASE)
    =================================================== */
 
-// Load Data Kelas dari Collection "kelas" di Firestore
+// Load Data Kelas dari Collection "kelas" di Firestore & Hitung Santri Realtime
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
@@ -57,14 +57,29 @@ async function loadKelasFromFirebase() {
     viewSantri.classList.add("hidden");
 
     try {
-        // Ambil data dari koleksi 'kelas'
         const querySnapshot = await getDocs(collection(db, "kelas"));
         listKelas = [];
         
-        querySnapshot.forEach((docSnap) => {
-            listKelas.push({
+        // Mengambil seluruh data kelas & jumlah santri tiap kelas secara paralel
+        const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            const santriSnap = await getDocs(collection(db, "kelas", docSnap.id, "santri"));
+            
+            return {
                 id: docSnap.id,
-                ...docSnap.data()
+                namaKelas: data.namaKelas || data.nama || "Kelas Tanpa Nama",
+                waliKelas: data.waliKelas || "-",
+                totalSantri: santriSnap.size
+            };
+        });
+
+        listKelas = await Promise.all(kelasPromises);
+
+        // Sorting Angka Alami (Natural Numerical Sort: Kelas 1, Kelas 2, Kelas 10, dst)
+        listKelas.sort((a, b) => {
+            return a.namaKelas.localeCompare(b.namaKelas, undefined, { 
+                numeric: true, 
+                sensitivity: 'base' 
             });
         });
 
@@ -80,10 +95,10 @@ async function loadKelasFromFirebase() {
         let cardsHtml = "";
         listKelas.forEach((kelas) => {
             cardsHtml += `
-                <div class="kelas-card-item" onclick="openSantriSubMenu('${kelas.id}', '${kelas.namaKelas}')">
+                <div class="kelas-card-item" onclick="openSantriSubMenu('${kelas.id}')">
                     <div class="kelas-info">
                         <div class="kelas-name">${kelas.namaKelas}</div>
-                        <div class="kelas-count">Klik untuk lihat santri</div>
+                        <div class="kelas-count">${kelas.totalSantri} santri</div>
                     </div>
                     <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
@@ -98,19 +113,57 @@ async function loadKelasFromFirebase() {
     }
 }
 
-// Simpan Kelas Baru ke Firebase
+// Open Modal Tambah / Edit Kelas
+window.openModalKelas = function(isEdit = false) {
+    const modal = document.getElementById("modal-kelas");
+    const title = document.getElementById("modal-kelas-title");
+    const inputNama = document.getElementById("nama-kelas-input");
+    const inputWali = document.getElementById("wali-kelas-input");
+
+    if (isEdit && selectedKelasData) {
+        title.innerText = "Edit Data Kelas";
+        inputNama.value = selectedKelasData.namaKelas || "";
+        inputWali.value = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
+    } else {
+        title.innerText = "Tambah Kelas Baru";
+        inputNama.value = "";
+        inputWali.value = "";
+    }
+
+    if (modal) modal.classList.add("active");
+};
+
+window.closeModalKelas = function() {
+    const modal = document.getElementById("modal-kelas");
+    if (modal) modal.classList.remove("active");
+};
+
+// Simpan atau Edit Kelas ke Firebase
 window.saveKelasData = async function(event) {
     event.preventDefault();
-    const inputKelas = document.getElementById("nama-kelas-input");
-    const namaKelas = inputKelas.value.trim();
+    const inputNama = document.getElementById("nama-kelas-input");
+    const inputWali = document.getElementById("wali-kelas-input");
+    const namaKelas = inputNama.value.trim();
+    const waliKelas = inputWali.value.trim();
     
     if (!namaKelas) return;
 
     try {
-        await addDoc(collection(db, "kelas"), {
-            namaKelas: namaKelas,
-            createdAt: new Date()
-        });
+        if (selectedKelasId && document.getElementById("modal-kelas-title").innerText.includes("Edit")) {
+            // Update Data Kelas
+            const docRef = doc(db, "kelas", selectedKelasId);
+            await updateDoc(docRef, {
+                namaKelas: namaKelas,
+                waliKelas: waliKelas || "-"
+            });
+        } else {
+            // Tambah Kelas Baru
+            await addDoc(collection(db, "kelas"), {
+                namaKelas: namaKelas,
+                waliKelas: waliKelas || "-",
+                createdAt: new Date()
+            });
+        }
 
         closeModalKelas();
         await renderMainView();
@@ -120,31 +173,34 @@ window.saveKelasData = async function(event) {
     }
 };
 
-window.openModalKelas = function() {
-    const modal = document.getElementById("modal-kelas");
-    if (modal) modal.classList.add("active");
-};
+// Hapus Kelas beserta Akses Sub-menu
+window.deleteKelasData = async function() {
+    if (!selectedKelasId) return;
 
-window.closeModalKelas = function() {
-    const modal = document.getElementById("modal-kelas");
-    const input = document.getElementById("nama-kelas-input");
-    if (modal) modal.classList.remove("active");
-    if (input) input.value = "";
+    if (!confirm(`Apakah Anda yakin ingin menghapus "${selectedKelasData.namaKelas}"? Seluruh data santri di kelas ini juga akan terhapus.`)) return;
+
+    try {
+        await deleteDoc(doc(db, "kelas", selectedKelasId));
+        alert("Kelas berhasil dihapus.");
+        goBackToKelasList();
+    } catch (error) {
+        console.error("Gagal menghapus kelas:", error);
+        alert("Gagal menghapus data kelas.");
+    }
 };
 
 /* ===================================================
-   2. LOGIKA SUB-MENU SANTRI (FIREBASE)
+   2. LOGIKA SUB-MENU SANTRI & STATISTIK (FIREBASE)
    =================================================== */
 
-window.openSantriSubMenu = function(kelasId, namaKelas) {
+window.openSantriSubMenu = function(kelasId) {
     selectedKelasId = kelasId;
-    selectedKelasNama = namaKelas;
     renderMainView();
 };
 
 window.goBackToKelasList = function() {
     selectedKelasId = null;
-    selectedKelasNama = "";
+    selectedKelasData = null;
     selectedSantriId = null;
     renderMainView();
 };
@@ -162,12 +218,17 @@ async function loadSantriFromFirebase(kelasId) {
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
+    // Ambil Data Kelas Spesifik
+    selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas", waliKelas: "-" };
+
     // Atur Toolbar
     btnBack.classList.remove("hidden");
-    pageTitle.innerText = `Data Santri - ${selectedKelasNama}`;
-    pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di ${selectedKelasNama}.`;
+    pageTitle.innerText = `Data Santri - ${selectedKelasData.namaKelas}`;
+    pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di ${selectedKelasData.namaKelas}.`;
     btnTambahKelas.classList.add("hidden");
     btnTambahSantri.classList.remove("hidden");
+
+    document.getElementById("sub-kelas-title").innerText = selectedKelasData.namaKelas;
 
     viewKelas.classList.add("hidden");
     viewSantri.classList.remove("hidden");
@@ -184,7 +245,27 @@ async function loadSantriFromFirebase(kelasId) {
             });
         });
 
-        if (listSantri.length === 0) {
+        // HITUNG STATISTIK KELAS (Laki-laki & Perempuan)
+        const totalSantri = listSantri.length;
+        let countLaki = 0;
+        let countPerempuan = 0;
+
+        listSantri.forEach((s) => {
+            const jk = (s.jenisKelamin || s.jk || "").toLowerCase();
+            if (jk.includes("laki") || jk === "l") {
+                countLaki++;
+            } else if (jk.includes("perempuan") || jk === "p") {
+                countPerempuan++;
+            }
+        });
+
+        // Set Nilai ke Widget Compact Stat Strip
+        document.getElementById("stat-wali-kelas").innerText = selectedKelasData.waliKelas || "-";
+        document.getElementById("stat-total-santri").innerText = `${totalSantri} Santri`;
+        document.getElementById("stat-count-l").innerText = countLaki;
+        document.getElementById("stat-count-p").innerText = countPerempuan;
+
+        if (totalSantri === 0) {
             emptyState.classList.remove("hidden");
             listContainer.classList.add("hidden");
             return;
@@ -201,7 +282,9 @@ async function loadSantriFromFirebase(kelasId) {
                         <div class="number-badge">${index + 1}</div>
                         <div>
                             <div class="santri-item-name">${santri.nama}</div>
-                            <div class="santri-item-nis">${santri.nis ? 'NIS: ' + santri.nis : 'NIS: -'}</div>
+                            <div class="santri-item-sub">
+                                ${santri.jenisKelamin || 'SANTRI'} • ${santri.nis ? 'NIS: ' + santri.nis : 'NIS: -'}
+                            </div>
                         </div>
                     </div>
                     <i data-lucide="chevron-right" class="chevron-icon"></i>
@@ -227,6 +310,7 @@ window.openDetailSantriModal = function(santriId) {
     if (!santri) return;
 
     document.getElementById("detail-santri-nama").innerText = santri.nama || "-";
+    document.getElementById("detail-santri-jk").innerText = santri.jenisKelamin || "-";
     document.getElementById("detail-santri-nis").innerText = santri.nis || "- (Belum ada)";
     document.getElementById("detail-santri-ayah").innerText = santri.ayah || "- (Belum ada)";
     document.getElementById("detail-santri-ibu").innerText = santri.ibu || "- (Belum ada)";
@@ -262,6 +346,7 @@ window.openFormSantriModal = function(isEdit = false, santriId = null) {
 
         formTitle.innerText = "Edit Data Santri";
         document.getElementById("santri-nama").value = santri.nama || "";
+        document.getElementById("santri-jk").value = santri.jenisKelamin || "Laki-laki";
         document.getElementById("santri-nis").value = santri.nis || "";
         document.getElementById("santri-ayah").value = santri.ayah || "";
         document.getElementById("santri-ibu").value = santri.ibu || "";
@@ -292,6 +377,7 @@ window.saveSantriData = async function(event) {
 
     const santriData = {
         nama: nama,
+        jenisKelamin: document.getElementById("santri-jk").value,
         nis: document.getElementById("santri-nis").value.trim(),
         ayah: document.getElementById("santri-ayah").value.trim(),
         ibu: document.getElementById("santri-ibu").value.trim(),

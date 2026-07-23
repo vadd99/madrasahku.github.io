@@ -31,6 +31,7 @@
     background: none;
     border: none;
     width: fit-content;
+    padding: 0;
 }
 
 .btn-back i {
@@ -65,6 +66,8 @@
     padding: 9px 16px;
     border-radius: var(--radius-md);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    cursor: pointer;
+    border: none;
 }
 
 .btn-icon {
@@ -87,13 +90,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 50px 16px;
+    padding: 40px 16px;
     text-align: center;
 }
 
 .empty-icon-wrapper {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background-color: var(--primary-light);
     border: 1px solid var(--primary-border);
@@ -129,6 +132,7 @@
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 0.8rem;
+    cursor: pointer;
 }
 
 /* Grid Card Kelas */
@@ -142,7 +146,7 @@
     background-color: var(--bg-sidebar);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -159,7 +163,8 @@
 .kelas-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    text-align: left;
 }
 
 .kelas-name {
@@ -169,11 +174,162 @@
 }
 
 .kelas-count {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
 }
 
-/* List Santri (Nomor Urut Sub-Menu) */
+/* ===================================================
+   HEADER DETAIL KELAS & STATISTIK COMPACT
+   =================================================== */
+.detail-kelas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.sub-kelas-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.kelas-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: var(--transition);
+}
+
+.btn-action-sm i {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-edit-kelas {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.btn-edit-kelas:hover {
+    background-color: rgba(59, 130, 246, 0.22);
+}
+
+.btn-delete-kelas {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.btn-delete-kelas:hover {
+    background-color: rgba(239, 68, 68, 0.22);
+}
+
+/* Stat Strip Container */
+.stat-strip-container {
+    display: grid;
+    grid-template-columns: 1.2fr repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+    .stat-strip-container {
+        grid-template-columns: 1fr 1fr;
+    }
+    .stat-wali {
+        grid-column: span 2;
+    }
+}
+
+.stat-pill-card {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-pill-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-pill-icon i,
+.stat-pill-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.stat-pill-content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    overflow: hidden;
+}
+
+.stat-pill-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-pill-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Variasi Warna Stat Pill */
+.stat-wali .stat-pill-icon {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.stat-total .stat-pill-icon {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.stat-male .stat-pill-icon {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.stat-female .stat-pill-icon {
+    background: rgba(236, 72, 153, 0.12);
+    color: #ec4899;
+}
+
+/* List Santri (Sub-Menu) */
 .santri-list {
     display: flex;
     flex-direction: column;
@@ -204,13 +360,13 @@
 }
 
 .number-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     background-color: var(--primary-light);
     color: var(--primary-text);
     border: 1px solid var(--primary-border);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -222,17 +378,20 @@
     font-size: 0.88rem;
     font-weight: 600;
     color: var(--text-main);
+    text-align: left;
 }
 
-.santri-item-nis {
-    font-size: 0.72rem;
+.santri-item-sub {
+    font-size: 0.73rem;
     color: var(--text-muted);
+    text-align: left;
 }
 
 .chevron-icon {
     width: 18px;
     height: 18px;
     color: var(--text-light);
+    flex-shrink: 0;
 }
 
 /* Modal Form Note & Always Active Button */

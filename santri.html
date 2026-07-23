@@ -33,7 +33,7 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk melihat atau mengelola data santri.</p>
                 </div>
 
-                <!-- Tombol Aksi Dinamis (Tambah Kelas / Tambah Santri) -->
+                <!-- Tombol Aksi Utama -->
                 <div id="toolbar-actions">
                     <button id="btn-tambah-kelas" class="btn-primary" onclick="openModalKelas()">
                         <i data-lucide="folder-plus" class="btn-icon"></i>
@@ -64,14 +64,79 @@
                         </button>
                     </div>
 
-                    <!-- Grid Card Kelas -->
+                    <!-- Grid Card Kelas (Berurutan 1, 2, 3...) -->
                     <div id="kelas-grid-container" class="kelas-grid hidden">
                         <!-- Card kelas dimuat via JS -->
                     </div>
                 </div>
 
-                <!-- VIEW 2: SUB-MENU DAFTAR SANTRI DALAM KELAS -->
+                <!-- VIEW 2: SUB-MENU DAFTAR SANTRI & STATISTIK KELAS -->
                 <div id="view-santri" class="hidden">
+                    
+                    <!-- Header Detail Kelas (Judul & Akses Edit/Hapus Kelas) -->
+                    <div class="detail-kelas-header">
+                        <div>
+                            <h3 id="sub-kelas-title" class="sub-kelas-title">Detail Kelas</h3>
+                        </div>
+                        <div class="kelas-action-buttons">
+                            <button class="btn-action-sm btn-edit-kelas" onclick="openModalKelas(true)">
+                                <i data-lucide="edit-3"></i>
+                                <span>Edit Kelas</span>
+                            </button>
+                            <button class="btn-action-sm btn-delete-kelas" onclick="deleteKelasData()">
+                                <i data-lucide="trash-2"></i>
+                                <span>Hapus Kelas</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STATISTIK KELAS RINGKAS (COMPACT STAT STRIP) -->
+                    <div class="stat-strip-container">
+                        <!-- Wali Kelas -->
+                        <div class="stat-pill-card stat-wali">
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user-check"></i>
+                            </div>
+                            <div class="stat-pill-content">
+                                <span class="stat-pill-label">Wali Kelas</span>
+                                <span id="stat-wali-kelas" class="stat-pill-value">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Total Santri -->
+                        <div class="stat-pill-card stat-total">
+                            <div class="stat-pill-icon">
+                                <i data-lucide="users"></i>
+                            </div>
+                            <div class="stat-pill-content">
+                                <span class="stat-pill-label">Total</span>
+                                <span id="stat-total-santri" class="stat-pill-value">0 Santri</span>
+                            </div>
+                        </div>
+
+                        <!-- Santri Laki-Laki -->
+                        <div class="stat-pill-card stat-male">
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div class="stat-pill-content">
+                                <span class="stat-pill-label">Laki-Laki</span>
+                                <span id="stat-count-l" class="stat-pill-value">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Santri Perempuan -->
+                        <div class="stat-pill-card stat-female">
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div class="stat-pill-content">
+                                <span class="stat-pill-label">Perempuan</span>
+                                <span id="stat-count-p" class="stat-pill-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tampilan Kosong (Santri di kelas ini masih kosong) -->
                     <div id="empty-state-santri" class="empty-state">
                         <div class="empty-icon-wrapper">
@@ -95,13 +160,13 @@
 
         </div>
 
-        <!-- MODAL 1: TAMBAH KELAS -->
+        <!-- MODAL 1: TAMBAH / EDIT KELAS -->
         <div id="modal-kelas" class="modal-overlay">
             <div class="modal-card">
                 <div class="modal-header">
                     <div class="modal-header-title">
                         <i data-lucide="folder-plus" class="modal-header-icon"></i>
-                        <h3>Tambah Kelas Baru</h3>
+                        <h3 id="modal-kelas-title">Tambah Kelas Baru</h3>
                     </div>
                     <button class="btn-close-modal" onclick="closeModalKelas()">
                         <i data-lucide="x"></i>
@@ -110,8 +175,12 @@
                 <form onsubmit="saveKelasData(event)">
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="nama-kelas-input">Nama / Tingkat Kelas</label>
-                            <input type="text" id="nama-kelas-input" class="form-input" placeholder="Contoh: Kelas 1, Kelas 2 A, Diniyah B" required>
+                            <label for="nama-kelas-input">Nama / Tingkat Kelas *</label>
+                            <input type="text" id="nama-kelas-input" class="form-input" placeholder="Contoh: Kelas 1, Kelas 2 A" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="wali-kelas-input">Wali Kelas (Opsional)</label>
+                            <input type="text" id="wali-kelas-input" class="form-input" placeholder="Contoh: Ust. Ahmad / Bu Siti">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -122,7 +191,7 @@
             </div>
         </div>
 
-        <!-- MODAL 2: DETAIL DATA SANTRI (Muncul Saat Nama Santri Diklik) -->
+        <!-- MODAL 2: DETAIL DATA SANTRI -->
         <div id="modal-detail-santri" class="modal-overlay">
             <div class="modal-card">
                 <div class="modal-header">
@@ -139,6 +208,10 @@
                     <div class="detail-item">
                         <span class="detail-label">Nama Santri</span>
                         <div id="detail-santri-nama" class="detail-value text-bold">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Jenis Kelamin</span>
+                        <div id="detail-santri-jk" class="detail-value">-</div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Nomor Induk / NIS</span>
@@ -176,7 +249,7 @@
             </div>
         </div>
 
-        <!-- MODAL 3: FORM INPUT / EDIT SANTRI (Data Tidak Wajib Terisi Semua) -->
+        <!-- MODAL 3: FORM INPUT / EDIT SANTRI -->
         <div id="modal-form-santri" class="modal-overlay">
             <div class="modal-card">
                 <div class="modal-header">
@@ -191,11 +264,19 @@
 
                 <form id="form-santri" onsubmit="saveSantriData(event)">
                     <div class="modal-body">
-                        <p class="form-note">* Hanya Nama Santri yang dianjurkan diisi. Kolom lain boleh dikosongkan jika data belum lengkap.</p>
+                        <p class="form-note">* Hanya Nama Santri yang wajib diisi. Kolom lain boleh dikosongkan jika belum lengkap.</p>
                         
                         <div class="form-group">
                             <label for="santri-nama">Nama Lengkap Santri *</label>
                             <input type="text" id="santri-nama" class="form-input" placeholder="Masukkan nama santri..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-jk">Jenis Kelamin</label>
+                            <select id="santri-jk" class="form-input">
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -226,7 +307,6 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-cancel" onclick="closeFormSantriModal()">Batal</button>
-                        <!-- Tombol Simpan selalu Aktif (Menyala) -->
                         <button type="submit" class="btn btn-save-active" id="btn-simpan-santri">
                             <i data-lucide="save"></i>
                             <span>Simpan Data</span>
