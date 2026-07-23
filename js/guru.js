@@ -8,7 +8,7 @@ import {
     doc 
 } from "./firebase-init.js";
 
-// Variable Penyimpanan Data Guru dari Firebase
+// Variable Penyimpanan Data Guru
 let listGuru = [];
 let selectedGuruId = null;
 
@@ -20,7 +20,7 @@ document.addEventListener("layoutReady", function () {
    1. LOAD DATA GURU DARI FIREBASE
    =================================================== */
 async function loadGuruFromFirebase() {
-    const emptyState = document.getElementById("empty-state-guru");
+    const emptyState = document.getElementById("empty-state");
     const listContainer = document.getElementById("guru-list-container");
 
     try {
@@ -46,12 +46,12 @@ async function loadGuruFromFirebase() {
         let listHtml = "";
         listGuru.forEach((guru, index) => {
             listHtml += `
-                <div class="guru-item" onclick="openDetailGuruModal('${guru.id}')">
+                <div class="guru-item" onclick="openDetailModal('${guru.id}')">
                     <div class="guru-item-left">
                         <div class="number-badge">${index + 1}</div>
                         <div>
                             <div class="guru-item-name">${guru.nama}</div>
-                            <div class="guru-item-sub">${guru.mapel ? 'Pengampu: ' + guru.mapel : 'NIP/NIG: ' + (guru.nip || '-')}</div>
+                            <div class="guru-item-sub">Pengampu: ${guru.kelasAjar || '-'}</div>
                         </div>
                     </div>
                     <i data-lucide="chevron-right" class="chevron-icon"></i>
@@ -68,25 +68,24 @@ async function loadGuruFromFirebase() {
 }
 
 /* ===================================================
-   2. DETAIL, EDIT & SIMPAN DATA GURU
+   2. DETAIL MODAL (LIHAT DATA)
    =================================================== */
-window.openDetailGuruModal = function(guruId) {
+window.openDetailModal = function(guruId) {
     selectedGuruId = guruId;
     const guru = listGuru.find(g => g.id === guruId);
     if (!guru) return;
 
-    document.getElementById("detail-guru-nama").innerText = guru.nama || "-";
-    document.getElementById("detail-guru-nip").innerText = guru.nip || "- (Belum ada)";
-    document.getElementById("detail-guru-mapel").innerText = guru.mapel || "- (Belum ada)";
-    document.getElementById("detail-guru-hp").innerText = guru.hp || "- (Belum ada)";
-    document.getElementById("detail-guru-alamat").innerText = guru.alamat || "- (Belum ada)";
+    document.getElementById("detail-nama").innerText = guru.nama || "-";
+    document.getElementById("detail-kelas").innerText = guru.kelasAjar || "-";
+    document.getElementById("detail-hp").innerText = guru.hp || "-";
+    document.getElementById("detail-alamat").innerText = guru.alamat || "-";
 
-    document.getElementById("btn-edit-guru").onclick = function () {
-        closeDetailGuruModal();
-        openFormGuruModal(true, guruId);
+    document.getElementById("btn-action-edit").onclick = function () {
+        closeDetailModal();
+        openFormModal(true, guruId);
     };
 
-    document.getElementById("btn-delete-guru").onclick = function () {
+    document.getElementById("btn-action-delete").onclick = function () {
         deleteGuruData(guruId);
     };
 
@@ -95,25 +94,27 @@ window.openDetailGuruModal = function(guruId) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.closeDetailGuruModal = function() {
+window.closeDetailModal = function() {
     const modal = document.getElementById("modal-detail-guru");
     if (modal) modal.classList.remove("active");
 };
 
-window.openFormGuruModal = function(isEdit = false, guruId = null) {
+/* ===================================================
+   3. FORM MODAL (TAMBAH & EDIT GURU)
+   =================================================== */
+window.openFormModal = function(isEdit = false, guruId = null) {
     const modal = document.getElementById("modal-form-guru");
-    const formTitle = document.getElementById("form-guru-title");
+    const formTitle = document.getElementById("form-title");
 
     if (isEdit && guruId) {
         selectedGuruId = guruId;
         const guru = listGuru.find(g => g.id === guruId);
 
         if (formTitle) formTitle.innerText = "Edit Data Guru";
-        document.getElementById("guru-nama").value = guru.nama || "";
-        document.getElementById("guru-nip").value = guru.nip || "";
-        document.getElementById("guru-mapel").value = guru.mapel || "";
-        document.getElementById("guru-hp").value = guru.hp || "";
-        document.getElementById("guru-alamat").value = guru.alamat || "";
+        document.getElementById("nama-guru").value = guru.nama || "";
+        document.getElementById("kelas-ajar").value = guru.kelasAjar || "";
+        document.getElementById("no-hp").value = guru.hp || "";
+        document.getElementById("alamat-guru").value = guru.alamat || "";
     } else {
         selectedGuruId = null;
         if (formTitle) formTitle.innerText = "Tambah Data Guru";
@@ -124,41 +125,42 @@ window.openFormGuruModal = function(isEdit = false, guruId = null) {
     if (modal) modal.classList.add("active");
 };
 
-window.closeFormGuruModal = function() {
+window.closeFormModal = function() {
     const modal = document.getElementById("modal-form-guru");
     const form = document.getElementById("form-guru");
     if (modal) modal.classList.remove("active");
     if (form) form.reset();
 };
 
-// Simpan atau Update Guru ke Firebase
+/* ===================================================
+   4. SIMPAN DATA KE FIREBASE
+   =================================================== */
 window.saveGuruData = async function(event) {
     event.preventDefault();
 
-    const nama = document.getElementById("guru-nama").value.trim();
+    const nama = document.getElementById("nama-guru").value.trim();
     if (!nama) return;
 
     const guruData = {
         nama: nama,
-        nip: document.getElementById("guru-nip").value.trim(),
-        mapel: document.getElementById("guru-mapel").value.trim(),
-        hp: document.getElementById("guru-hp").value.trim(),
-        alamat: document.getElementById("guru-alamat").value.trim(),
+        kelasAjar: document.getElementById("kelas-ajar").value,
+        hp: document.getElementById("no-hp").value.trim(),
+        alamat: document.getElementById("alamat-guru").value.trim(),
         updatedAt: new Date()
     };
 
     try {
         if (selectedGuruId) {
-            // EDIT / UPDATE DATA GURU
+            // Edit Data
             const guruDocRef = doc(db, "guru", selectedGuruId);
             await updateDoc(guruDocRef, guruData);
         } else {
-            // TAMBAH GURU BARU
+            // Tambah Data Baru
             guruData.createdAt = new Date();
             await addDoc(collection(db, "guru"), guruData);
         }
 
-        closeFormGuruModal();
+        closeFormModal();
         await loadGuruFromFirebase();
     } catch (error) {
         console.error("Gagal menyimpan data guru:", error);
@@ -166,7 +168,9 @@ window.saveGuruData = async function(event) {
     }
 };
 
-// Hapus Data Guru
+/* ===================================================
+   5. HAPUS DATA GURU
+   =================================================== */
 async function deleteGuruData(guruId) {
     if (!confirm("Apakah Anda yakin ingin menghapus data guru ini?")) return;
 
@@ -174,7 +178,7 @@ async function deleteGuruData(guruId) {
         const guruDocRef = doc(db, "guru", guruId);
         await deleteDoc(guruDocRef);
 
-        closeDetailGuruModal();
+        closeDetailModal();
         await loadGuruFromFirebase();
     } catch (error) {
         console.error("Gagal menghapus guru:", error);
