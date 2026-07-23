@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!layoutWrapper) return;
 
-    // Fetch file layout.html yang berisi Header & Sidebar
-    fetch("components/layout.html")
+    // Fetch langsung file layout.html di root directory
+    fetch("layout.html")
         .then(response => {
             if (!response.ok) {
                 throw new Error("Gagal memuat komponen layout");
