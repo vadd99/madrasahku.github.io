@@ -5,17 +5,23 @@ import {
     addDoc, 
     updateDoc, 
     deleteDoc, 
-    doc 
+    doc,
+    setDoc
 } from "./firebase-init.js";
 
 // Variable Penyimpanan Sementara dari Firebase
 let listKelas = [];       // Menyimpan daftar dokumen kelas
 let listSantri = [];      // Menyimpan daftar santri pada kelas yang dipilih
+let listGuru = [];        // Menyimpan daftar guru dari koleksi "guru"
 
 let selectedKelasId = null;
 let selectedKelasData = null;
 let selectedSantriId = null;
 
+// Inisialisasi Tampilan (Mencegah Race Condition Event Layout)
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    renderMainView();
+}
 document.addEventListener("layoutReady", function () {
     renderMainView();
 });
@@ -26,6 +32,47 @@ async function renderMainView() {
         await loadKelasFromFirebase();
     } else {
         await loadSantriFromFirebase(selectedKelasId);
+    }
+}
+
+/* ===================================================
+   LOAD DATA GURU UNTUK WALI KELAS
+   =================================================== */
+async function loadGuruOptions(selectedValue = "") {
+    const selectWali = document.getElementById("wali-kelas-input");
+    if (!selectWali) return;
+
+    selectWali.innerHTML = '<option value="">-- Pilih Wali Kelas (Opsional) --</option>';
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "guru"));
+        listGuru = [];
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const namaGuru = data.nama || data.namaGuru || data.namaLengkap || "Tanpa Nama";
+            listGuru.push({
+                id: docSnap.id,
+                nama: namaGuru
+            });
+        });
+
+        // Urutkan nama guru A-Z
+        listGuru.sort((a, b) => a.nama.localeCompare(b.nama));
+
+        listGuru.forEach((guru) => {
+            const option = document.createElement("option");
+            option.value = guru.nama;
+            option.textContent = guru.nama;
+            selectWali.appendChild(option);
+        });
+
+        // Set nilai terpilih setelah option selesai di-render
+        if (selectedValue) {
+            selectWali.value = selectedValue;
+        }
+    } catch (error) {
+        console.error("Gagal mengambil data guru dari database:", error);
     }
 }
 
@@ -46,15 +93,15 @@ async function loadKelasFromFirebase() {
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
-    // Atur Toolbar
-    btnBack.classList.add("hidden");
-    pageTitle.innerText = "Data Santri Per Kelas";
-    pageSubtitle.innerText = "Pilih kelas untuk melihat atau mengelola data santri.";
-    btnTambahKelas.classList.remove("hidden");
-    btnTambahSantri.classList.add("hidden");
+    // Atur Toolbar (dengan Null Safety)
+    if (btnBack) btnBack.classList.add("hidden");
+    if (pageTitle) pageTitle.innerText = "Data Santri Per Kelas";
+    if (pageSubtitle) pageSubtitle.innerText = "Pilih kelas untuk melihat atau mengelola data santri.";
+    if (btnTambahKelas) btnTambahKelas.classList.remove("hidden");
+    if (btnTambahSantri) btnTambahSantri.classList.add("hidden");
 
-    viewKelas.classList.remove("hidden");
-    viewSantri.classList.add("hidden");
+    if (viewKelas) viewKelas.classList.remove("hidden");
+    if (viewSantri) viewSantri.classList.add("hidden");
 
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
@@ -84,13 +131,13 @@ async function loadKelasFromFirebase() {
         });
 
         if (listKelas.length === 0) {
-            emptyState.classList.remove("hidden");
-            gridContainer.classList.add("hidden");
+            if (emptyState) emptyState.classList.remove("hidden");
+            if (gridContainer) gridContainer.classList.add("hidden");
             return;
         }
 
-        emptyState.classList.add("hidden");
-        gridContainer.classList.remove("hidden");
+        if (emptyState) emptyState.classList.add("hidden");
+        if (gridContainer) gridContainer.classList.remove("hidden");
 
         let cardsHtml = "";
         listKelas.forEach((kelas) => {
@@ -105,7 +152,7 @@ async function loadKelasFromFirebase() {
             `;
         });
 
-        gridContainer.innerHTML = cardsHtml;
+        if (gridContainer) gridContainer.innerHTML = cardsHtml;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
     } catch (error) {
@@ -118,19 +165,24 @@ window.openModalKelas = function(isEdit = false) {
     const modal = document.getElementById("modal-kelas");
     const title = document.getElementById("modal-kelas-title");
     const inputNama = document.getElementById("nama-kelas-input");
-    const inputWali = document.getElementById("wali-kelas-input");
+
+    let targetWali = "";
 
     if (isEdit && selectedKelasData) {
-        title.innerText = "Edit Data Kelas";
-        inputNama.value = selectedKelasData.namaKelas || "";
-        inputWali.value = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
+        if (title) title.innerText = "Edit Data Kelas";
+        if (inputNama) inputNama.value = selectedKelasData.namaKelas || "";
+        targetWali = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
     } else {
-        title.innerText = "Tambah Kelas Baru";
-        inputNama.value = "";
-        inputWali.value = "";
+        if (title) title.innerText = "Tambah Kelas Baru";
+        if (inputNama) inputNama.value = "";
+        targetWali = "";
     }
 
+    // 1. Langsung buka modal agar responsif saat tombol diklik
     if (modal) modal.classList.add("active");
+
+    // 2. Muat data guru di latar belakang tanpa memblokir pembukaan modal
+    loadGuruOptions(targetWali);
 };
 
 window.closeModalKelas = function() {
@@ -142,14 +194,16 @@ window.closeModalKelas = function() {
 window.saveKelasData = async function(event) {
     event.preventDefault();
     const inputNama = document.getElementById("nama-kelas-input");
-    const inputWali = document.getElementById("wali-kelas-input");
-    const namaKelas = inputNama.value.trim();
-    const waliKelas = inputWali.value.trim();
+    const selectWali = document.getElementById("wali-kelas-input");
+    
+    const namaKelas = inputNama ? inputNama.value.trim() : "";
+    const waliKelas = selectWali ? selectWali.value.trim() : "";
     
     if (!namaKelas) return;
 
     try {
-        if (selectedKelasId && document.getElementById("modal-kelas-title").innerText.includes("Edit")) {
+        const titleText = document.getElementById("modal-kelas-title")?.innerText || "";
+        if (selectedKelasId && titleText.includes("Edit")) {
             // Update Data Kelas
             const docRef = doc(db, "kelas", selectedKelasId);
             await updateDoc(docRef, {
@@ -222,16 +276,17 @@ async function loadSantriFromFirebase(kelasId) {
     selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas", waliKelas: "-" };
 
     // Atur Toolbar
-    btnBack.classList.remove("hidden");
-    pageTitle.innerText = `Data Santri - ${selectedKelasData.namaKelas}`;
-    pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di ${selectedKelasData.namaKelas}.`;
-    btnTambahKelas.classList.add("hidden");
-    btnTambahSantri.classList.remove("hidden");
+    if (btnBack) btnBack.classList.remove("hidden");
+    if (pageTitle) pageTitle.innerText = `Data Santri - ${selectedKelasData.namaKelas}`;
+    if (pageSubtitle) pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di ${selectedKelasData.namaKelas}.`;
+    if (btnTambahKelas) btnTambahKelas.classList.add("hidden");
+    if (btnTambahSantri) btnTambahSantri.classList.remove("hidden");
 
-    document.getElementById("sub-kelas-title").innerText = selectedKelasData.namaKelas;
+    const elSubTitle = document.getElementById("sub-kelas-title");
+    if (elSubTitle) elSubTitle.innerText = selectedKelasData.namaKelas;
 
-    viewKelas.classList.add("hidden");
-    viewSantri.classList.remove("hidden");
+    if (viewKelas) viewKelas.classList.add("hidden");
+    if (viewSantri) viewSantri.classList.remove("hidden");
 
     try {
         const santriRef = collection(db, "kelas", kelasId, "santri");
@@ -260,19 +315,24 @@ async function loadSantriFromFirebase(kelasId) {
         });
 
         // Set Nilai ke Widget Compact Stat Strip
-        document.getElementById("stat-wali-kelas").innerText = selectedKelasData.waliKelas || "-";
-        document.getElementById("stat-total-santri").innerText = `${totalSantri} Santri`;
-        document.getElementById("stat-count-l").innerText = countLaki;
-        document.getElementById("stat-count-p").innerText = countPerempuan;
+        const elStatWali = document.getElementById("stat-wali-kelas");
+        const elStatTotal = document.getElementById("stat-total-santri");
+        const elStatL = document.getElementById("stat-count-l");
+        const elStatP = document.getElementById("stat-count-p");
+
+        if (elStatWali) elStatWali.innerText = selectedKelasData.waliKelas || "-";
+        if (elStatTotal) elStatTotal.innerText = `${totalSantri} Santri`;
+        if (elStatL) elStatL.innerText = countLaki;
+        if (elStatP) elStatP.innerText = countPerempuan;
 
         if (totalSantri === 0) {
-            emptyState.classList.remove("hidden");
-            listContainer.classList.add("hidden");
+            if (emptyState) emptyState.classList.remove("hidden");
+            if (listContainer) listContainer.classList.add("hidden");
             return;
         }
 
-        emptyState.classList.add("hidden");
-        listContainer.classList.remove("hidden");
+        if (emptyState) emptyState.classList.add("hidden");
+        if (listContainer) listContainer.classList.remove("hidden");
 
         let listHtml = "";
         listSantri.forEach((santri, index) => {
@@ -292,7 +352,7 @@ async function loadSantriFromFirebase(kelasId) {
             `;
         });
 
-        listContainer.innerHTML = listHtml;
+        if (listContainer) listContainer.innerHTML = listHtml;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
     } catch (error) {
@@ -309,22 +369,33 @@ window.openDetailSantriModal = function(santriId) {
     const santri = listSantri.find(s => s.id === santriId);
     if (!santri) return;
 
-    document.getElementById("detail-santri-nama").innerText = santri.nama || "-";
-    document.getElementById("detail-santri-jk").innerText = santri.jenisKelamin || "-";
-    document.getElementById("detail-santri-nis").innerText = santri.nis || "- (Belum ada)";
-    document.getElementById("detail-santri-ayah").innerText = santri.ayah || "- (Belum ada)";
-    document.getElementById("detail-santri-ibu").innerText = santri.ibu || "- (Belum ada)";
-    document.getElementById("detail-santri-hp").innerText = santri.hp || "- (Belum ada)";
-    document.getElementById("detail-santri-alamat").innerText = santri.alamat || "- (Belum ada)";
-
-    document.getElementById("btn-edit-santri").onclick = function () {
-        closeDetailSantriModal();
-        openFormSantriModal(true, santriId);
+    const setTxt = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
     };
 
-    document.getElementById("btn-delete-santri").onclick = function () {
-        deleteSantriData(santriId);
-    };
+    setTxt("detail-santri-nama", santri.nama || "-");
+    setTxt("detail-santri-jk", santri.jenisKelamin || "-");
+    setTxt("detail-santri-nis", santri.nis || "- (Belum ada)");
+    setTxt("detail-santri-ayah", santri.ayah || "- (Belum ada)");
+    setTxt("detail-santri-ibu", santri.ibu || "- (Belum ada)");
+    setTxt("detail-santri-hp", santri.hp || "- (Belum ada)");
+    setTxt("detail-santri-alamat", santri.alamat || "- (Belum ada)");
+
+    const btnEdit = document.getElementById("btn-edit-santri");
+    if (btnEdit) {
+        btnEdit.onclick = function () {
+            closeDetailSantriModal();
+            openFormSantriModal(true, santriId);
+        };
+    }
+
+    const btnDelete = document.getElementById("btn-delete-santri");
+    if (btnDelete) {
+        btnDelete.onclick = function () {
+            deleteSantriData(santriId);
+        };
+    }
 
     const modal = document.getElementById("modal-detail-santri");
     if (modal) modal.classList.add("active");
@@ -336,26 +407,59 @@ window.closeDetailSantriModal = function() {
     if (modal) modal.classList.remove("active");
 };
 
+// Populasikan Dropdown Pilih Kelas
+function populateKelasSelect(selectedId = null) {
+    const selectKelas = document.getElementById("santri-kelas");
+    if (!selectKelas) return;
+
+    selectKelas.innerHTML = "";
+    listKelas.forEach((k) => {
+        const option = document.createElement("option");
+        option.value = k.id;
+        option.textContent = k.namaKelas;
+        if (selectedId && k.id === selectedId) {
+            option.selected = true;
+        } else if (!selectedId && k.id === selectedKelasId) {
+            option.selected = true;
+        }
+        selectKelas.appendChild(option);
+    });
+}
+
 window.openFormSantriModal = function(isEdit = false, santriId = null) {
     const modal = document.getElementById("modal-form-santri");
     const formTitle = document.getElementById("form-santri-title");
+
+    // Render daftar kelas ke dropdown
+    populateKelasSelect(selectedKelasId);
+
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    };
 
     if (isEdit && santriId) {
         selectedSantriId = santriId;
         const santri = listSantri.find(s => s.id === santriId);
 
-        formTitle.innerText = "Edit Data Santri";
-        document.getElementById("santri-nama").value = santri.nama || "";
-        document.getElementById("santri-jk").value = santri.jenisKelamin || "Laki-laki";
-        document.getElementById("santri-nis").value = santri.nis || "";
-        document.getElementById("santri-ayah").value = santri.ayah || "";
-        document.getElementById("santri-ibu").value = santri.ibu || "";
-        document.getElementById("santri-hp").value = santri.hp || "";
-        document.getElementById("santri-alamat").value = santri.alamat || "";
+        if (formTitle) formTitle.innerText = "Edit Data Santri";
+        setVal("santri-nama", santri ? santri.nama || "" : "");
+        setVal("santri-jk", santri ? santri.jenisKelamin || "Laki-laki" : "Laki-laki");
+        setVal("santri-nis", santri ? santri.nis || "" : "");
+        setVal("santri-ayah", santri ? santri.ayah || "" : "");
+        setVal("santri-ibu", santri ? santri.ibu || "" : "");
+        setVal("santri-hp", santri ? santri.hp || "" : "");
+        setVal("santri-alamat", santri ? santri.alamat || "" : "");
+
+        setVal("santri-kelas", selectedKelasId);
     } else {
         selectedSantriId = null;
-        formTitle.innerText = "Tambah Data Santri";
-        document.getElementById("form-santri").reset();
+        if (formTitle) formTitle.innerText = "Tambah Data Santri";
+        const form = document.getElementById("form-santri");
+        if (form) form.reset();
+        if (selectedKelasId) {
+            setVal("santri-kelas", selectedKelasId);
+        }
     }
 
     if (modal) modal.classList.add("active");
@@ -368,34 +472,59 @@ window.closeFormSantriModal = function() {
     if (form) form.reset();
 };
 
-// Simpan atau Update Santri ke Firebase
+// Simpan, Edit, atau Pindah Kelas Santri di Firebase
 window.saveSantriData = async function(event) {
     event.preventDefault();
 
-    const nama = document.getElementById("santri-nama").value.trim();
-    if (!nama) return;
+    const inputNama = document.getElementById("santri-nama");
+    const selectKelas = document.getElementById("santri-kelas");
+
+    const nama = inputNama ? inputNama.value.trim() : "";
+    const targetKelasId = selectKelas ? selectKelas.value : selectedKelasId;
+
+    if (!nama || !targetKelasId) return;
+
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : "";
+    };
 
     const santriData = {
         nama: nama,
-        jenisKelamin: document.getElementById("santri-jk").value,
-        nis: document.getElementById("santri-nis").value.trim(),
-        ayah: document.getElementById("santri-ayah").value.trim(),
-        ibu: document.getElementById("santri-ibu").value.trim(),
-        hp: document.getElementById("santri-hp").value.trim(),
-        alamat: document.getElementById("santri-alamat").value.trim(),
+        jenisKelamin: getVal("santri-jk") || "Laki-laki",
+        nis: getVal("santri-nis"),
+        ayah: getVal("santri-ayah"),
+        ibu: getVal("santri-ibu"),
+        hp: getVal("santri-hp"),
+        alamat: getVal("santri-alamat"),
         updatedAt: new Date()
     };
 
     try {
         if (selectedSantriId) {
-            // EDIT / UPDATE DATA
-            const santriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
-            await updateDoc(santriDocRef, santriData);
+            // JIKA PINDAH KELAS
+            if (targetKelasId !== selectedKelasId) {
+                // 1. Simpan/Buat dokumen di sub-koleksi kelas baru
+                const newDocRef = doc(db, "kelas", targetKelasId, "santri", selectedSantriId);
+                await setDoc(newDocRef, santriData);
+
+                // 2. Hapus dokumen lama di sub-koleksi kelas lama
+                const oldDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
+                await deleteDoc(oldDocRef);
+
+                // Update kelas aktif ke kelas baru
+                selectedKelasId = targetKelasId;
+            } else {
+                // EDIT DATA DENGAN KELAS YANG SAMA
+                const santriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
+                await updateDoc(santriDocRef, santriData);
+            }
         } else {
-            // TAMBAH DATA BARU
+            // TAMBAH DATA BARU PADA KELAS TERPILIH
             santriData.createdAt = new Date();
-            const santriRef = collection(db, "kelas", selectedKelasId, "santri");
+            const santriRef = collection(db, "kelas", targetKelasId, "santri");
             await addDoc(santriRef, santriData);
+            selectedKelasId = targetKelasId;
         }
 
         closeFormSantriModal();
