@@ -8,7 +8,6 @@ import {
     doc 
 } from "./firebase-init.js";
 
-// Variable Penyimpanan Data Guru
 let listGuru = [];
 let selectedGuruId = null;
 
@@ -46,12 +45,14 @@ async function loadGuruFromFirebase() {
         let listHtml = "";
         listGuru.forEach((guru, index) => {
             listHtml += `
-                <div class="guru-item" onclick="openDetailModal('${guru.id}')">
-                    <div class="guru-item-left">
-                        <div class="number-badge">${index + 1}</div>
-                        <div>
-                            <div class="guru-item-name">${guru.nama}</div>
-                            <div class="guru-item-sub">Pengampu: ${guru.kelasAjar || '-'}</div>
+                <div class="guru-card-item" onclick="openDetailModal('${guru.id}')">
+                    <div class="guru-info-wrapper">
+                        <div class="guru-number-badge">${index + 1}</div>
+                        <div class="guru-text-info">
+                            <div class="guru-name">${guru.nama}</div>
+                            <div>
+                                <span class="guru-class-badge">Pengampu: ${guru.kelasAjar || 'Belum Ditentukan'}</span>
+                            </div>
                         </div>
                     </div>
                     <i data-lucide="chevron-right" class="chevron-icon"></i>
@@ -151,11 +152,9 @@ window.saveGuruData = async function(event) {
 
     try {
         if (selectedGuruId) {
-            // Edit Data
             const guruDocRef = doc(db, "guru", selectedGuruId);
             await updateDoc(guruDocRef, guruData);
         } else {
-            // Tambah Data Baru
             guruData.createdAt = new Date();
             await addDoc(collection(db, "guru"), guruData);
         }

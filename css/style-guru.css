@@ -36,6 +36,7 @@
     padding: 9px 16px;
     border-radius: var(--radius-md);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    cursor: pointer;
 }
 
 .btn-icon {
@@ -100,20 +101,22 @@
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 0.8rem;
+    cursor: pointer;
 }
 
-/* Card List Guru (Simpel untuk Mobile & Dekstop) */
+/* Container & Grid List Guru */
 .guru-list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
+/* Kartu Tiap Guru */
 .guru-card-item {
     background-color: var(--bg-sidebar);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 14px 16px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -127,22 +130,64 @@
     background-color: var(--primary-light);
 }
 
-.guru-info {
+/* Bagian Kiri (Nomor + Teks Info Guru) */
+.guru-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Badge Nomor Urut Guru */
+.guru-number-badge {
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary-light);
+    color: var(--primary-text);
+    border: 1px solid var(--primary-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.88rem;
+    flex-shrink: 0;
+}
+
+/* Teks Info Nama & Kelas Pengampu */
+.guru-text-info {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    text-align: left;
 }
 
 .guru-name {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--text-main);
+    line-height: 1.2;
 }
 
+.guru-class-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* Ikon Panah Kanan */
 .chevron-icon {
     width: 18px;
     height: 18px;
     color: var(--text-light);
+    flex-shrink: 0;
+}
+
+.guru-card-item:hover .chevron-icon {
+    color: var(--primary-text);
 }
 
 /* Detail Modal Styles */
@@ -215,8 +260,8 @@
 
 /* Saat Form Belum Lengkap (Mati / Redup) */
 .btn-save:disabled {
-    background: #1e293b !important; /* Warna gelap redup */
-    color: #64748b !important;       /* Teks abu-abu */
+    background: #1e293b !important;
+    color: #64748b !important;
     border: 1px solid var(--border-color);
     cursor: not-allowed;
     box-shadow: none;
@@ -229,7 +274,6 @@
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
 }
-
 
 /* Modal Core Overrides */
 .modal-card {
