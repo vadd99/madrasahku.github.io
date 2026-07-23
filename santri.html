@@ -51,7 +51,6 @@
                 
                 <!-- VIEW 1: DAFTAR KELAS -->
                 <div id="view-kelas">
-                    <!-- Tampilan Kosong (Belum ada Kelas) -->
                     <div id="empty-state-kelas" class="empty-state">
                         <div class="empty-icon-wrapper">
                             <i data-lucide="school"></i>
@@ -64,7 +63,6 @@
                         </button>
                     </div>
 
-                    <!-- Grid Card Kelas (Berurutan 1, 2, 3...) -->
                     <div id="kelas-grid-container" class="kelas-grid hidden">
                         <!-- Card kelas dimuat via JS -->
                     </div>
@@ -73,7 +71,6 @@
                 <!-- VIEW 2: SUB-MENU DAFTAR SANTRI & STATISTIK KELAS -->
                 <div id="view-santri" class="hidden">
                     
-                    <!-- Header Detail Kelas (Judul & Akses Edit/Hapus Kelas) -->
                     <div class="detail-kelas-header">
                         <div>
                             <h3 id="sub-kelas-title" class="sub-kelas-title">Detail Kelas</h3>
@@ -90,9 +87,8 @@
                         </div>
                     </div>
 
-                    <!-- STATISTIK KELAS RINGKAS (COMPACT STAT STRIP) -->
+                    <!-- STATISTIK KELAS RINGKAS -->
                     <div class="stat-strip-container">
-                        <!-- Wali Kelas -->
                         <div class="stat-pill-card stat-wali">
                             <div class="stat-pill-icon">
                                 <i data-lucide="user-check"></i>
@@ -103,7 +99,6 @@
                             </div>
                         </div>
 
-                        <!-- Total Santri -->
                         <div class="stat-pill-card stat-total">
                             <div class="stat-pill-icon">
                                 <i data-lucide="users"></i>
@@ -114,7 +109,6 @@
                             </div>
                         </div>
 
-                        <!-- Santri Laki-Laki -->
                         <div class="stat-pill-card stat-male">
                             <div class="stat-pill-icon">
                                 <i data-lucide="user"></i>
@@ -125,7 +119,6 @@
                             </div>
                         </div>
 
-                        <!-- Santri Perempuan -->
                         <div class="stat-pill-card stat-female">
                             <div class="stat-pill-icon">
                                 <i data-lucide="user"></i>
@@ -137,7 +130,6 @@
                         </div>
                     </div>
 
-                    <!-- Tampilan Kosong (Santri di kelas ini masih kosong) -->
                     <div id="empty-state-santri" class="empty-state">
                         <div class="empty-icon-wrapper">
                             <i data-lucide="user-x"></i>
@@ -150,7 +142,6 @@
                         </button>
                     </div>
 
-                    <!-- List Santri Berurutan (1, 2, 3...) -->
                     <div id="santri-list-container" class="santri-list hidden">
                         <!-- List nama santri dimuat via JS -->
                     </div>
@@ -180,7 +171,6 @@
                         </div>
                         <div class="form-group">
                             <label for="wali-kelas-input">Wali Kelas (Opsional)</label>
-                            <!-- DROPDOWN DARI DATABASE GURU -->
                             <select id="wali-kelas-input" class="form-input">
                                 <option value="">-- Pilih Wali Kelas --</option>
                             </select>
@@ -267,11 +257,22 @@
 
                 <form id="form-santri" onsubmit="saveSantriData(event)">
                     <div class="modal-body">
-                        <p class="form-note">* Hanya Nama Santri yang wajib diisi. Kolom lain boleh dikosongkan jika belum lengkap.</p>
+                        <p class="form-note">* Hanya Nama Santri yang wajib diisi. Kolom lain boleh dikosongkan.</p>
                         
                         <div class="form-group">
                             <label for="santri-nama">Nama Lengkap Santri *</label>
                             <input type="text" id="santri-nama" class="form-input" placeholder="Masukkan nama santri..." required>
+                        </div>
+
+                        <!-- KOLOM PILIH KELAS (Hanya Tampil Saat Mode Edit untuk Pindah Kelas) -->
+                        <div class="form-group hidden" id="group-kelas-target">
+                            <label for="santri-kelas-target">Pindah Kelas / Kelas Saat Ini</label>
+                            <select id="santri-kelas-target" class="form-input">
+                                <!-- Opsi kelas dimuat via JS -->
+                            </select>
+                            <small style="color: var(--text-light); font-size: 0.75rem; margin-top: 4px; display: block;">
+                                Ubah pilihan kelas di atas jika ingin memindahkan santri ke kelas lain (naik/turun kelas).
+                            </small>
                         </div>
 
                         <div class="form-group">
