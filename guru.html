@@ -131,14 +131,9 @@
 
                         <div class="form-group">
                             <label for="kelas-ajar">Kelas yang Diajar</label>
+                            <!-- DROPDOWN KELAS DINAMIS DARI DATABASE -->
                             <select id="kelas-ajar" class="form-input" required>
-                                <option value="" disabled selected>-- Pilih Kelas --</option>
-                                <option value="Kelas 1">Kelas 1</option>
-                                <option value="Kelas 2">Kelas 2</option>
-                                <option value="Kelas 3">Kelas 3</option>
-                                <option value="Kelas 4">Kelas 4</option>
-                                <option value="Kelas 5">Kelas 5</option>
-                                <option value="Kelas 6">Kelas 6</option>
+                                <option value="" disabled selected>-- Memuat Kelas... --</option>
                             </select>
                         </div>
 
@@ -153,16 +148,13 @@
                         </div>
                     </div>
 
-<div class="modal-footer">
-    <button type="button" class="btn btn-cancel" onclick="closeFormModal()">Batal</button>
-    
-    <!-- Atribut disabled sudah dihapus -->
-    <button type="submit" class="btn btn-save" id="btn-simpan-guru">
-        <i data-lucide="save"></i>
-        <span>Simpan</span>
-    </button>
-</div>
-
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" onclick="closeFormModal()">Batal</button>
+                        <button type="submit" class="btn btn-save" id="btn-simpan-guru">
+                            <i data-lucide="save"></i>
+                            <span>Simpan</span>
+                        </button>
+                    </div>
 
                 </form>
             </div>

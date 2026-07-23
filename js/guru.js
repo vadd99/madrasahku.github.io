@@ -101,11 +101,55 @@ window.closeDetailModal = function() {
 };
 
 /* ===================================================
-   3. FORM MODAL (TAMBAH & EDIT GURU)
+   3. POPULATE DROPDOWN KELAS DARI DATABASE
    =================================================== */
-window.openFormModal = function(isEdit = false, guruId = null) {
+async function populateKelasDropdown(selectedKelasValue = "") {
+    const kelasSelect = document.getElementById("kelas-ajar");
+    if (!kelasSelect) return;
+
+    // Loading state awal untuk select
+    kelasSelect.innerHTML = `<option value="" disabled selected>-- Memuat daftar kelas... --</option>`;
+
+    try {
+        const kelasSnap = await getDocs(collection(db, "kelas"));
+        let listKelas = [];
+
+        kelasSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            const namaKelas = data.namaKelas || data.nama || docSnap.id;
+            listKelas.push(namaKelas);
+        });
+
+        // Urutkan nama kelas secara alami (Kelas 1, Kelas 2, Kelas 10, dll)
+        listKelas.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+        let optionsHtml = `<option value="" disabled ${!selectedKelasValue ? 'selected' : ''}>-- Pilih Kelas --</option>`;
+
+        if (listKelas.length === 0) {
+            optionsHtml = `<option value="" disabled selected>-- Belum ada data kelas --</option>`;
+        } else {
+            listKelas.forEach((namaKelas) => {
+                const isSelected = (namaKelas === selectedKelasValue) ? "selected" : "";
+                optionsHtml += `<option value="${namaKelas}" ${isSelected}>${namaKelas}</option>`;
+            });
+        }
+
+        kelasSelect.innerHTML = optionsHtml;
+
+    } catch (error) {
+        console.error("Gagal memuat daftar kelas:", error);
+        kelasSelect.innerHTML = `<option value="" disabled selected>-- Gagal memuat data kelas --</option>`;
+    }
+}
+
+/* ===================================================
+   4. FORM MODAL (TAMBAH & EDIT GURU)
+   =================================================== */
+window.openFormModal = async function(isEdit = false, guruId = null) {
     const modal = document.getElementById("modal-form-guru");
     const formTitle = document.getElementById("form-title");
+
+    let currentKelasAjar = "";
 
     if (isEdit && guruId) {
         selectedGuruId = guruId;
@@ -113,7 +157,7 @@ window.openFormModal = function(isEdit = false, guruId = null) {
 
         if (formTitle) formTitle.innerText = "Edit Data Guru";
         document.getElementById("nama-guru").value = guru.nama || "";
-        document.getElementById("kelas-ajar").value = guru.kelasAjar || "";
+        currentKelasAjar = guru.kelasAjar || "";
         document.getElementById("no-hp").value = guru.hp || "";
         document.getElementById("alamat-guru").value = guru.alamat || "";
     } else {
@@ -124,6 +168,9 @@ window.openFormModal = function(isEdit = false, guruId = null) {
     }
 
     if (modal) modal.classList.add("active");
+
+    // Tampilkan opsi kelas dinamis dari Firestore
+    await populateKelasDropdown(currentKelasAjar);
 };
 
 window.closeFormModal = function() {
@@ -134,7 +181,7 @@ window.closeFormModal = function() {
 };
 
 /* ===================================================
-   4. SIMPAN DATA KE FIREBASE
+   5. SIMPAN DATA KE FIREBASE
    =================================================== */
 window.saveGuruData = async function(event) {
     event.preventDefault();
@@ -168,7 +215,7 @@ window.saveGuruData = async function(event) {
 };
 
 /* ===================================================
-   5. HAPUS DATA GURU
+   6. HAPUS DATA GURU
    =================================================== */
 async function deleteGuruData(guruId) {
     if (!confirm("Apakah Anda yakin ingin menghapus data guru ini?")) return;
