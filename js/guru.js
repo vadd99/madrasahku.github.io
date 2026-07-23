@@ -1,10 +1,40 @@
 // Memory Data Sementara
 let listGuru = [];
-let activeGuruIndex = null; // Menyimpan index guru yang sedang dibuka di modal detail
+let activeGuruIndex = null;
 
 document.addEventListener("layoutReady", function () {
     renderGuruList();
+    setupFormValidationListeners(); // Pasang pantauan input form
 });
+
+// Fungsi Memantau Kelengkapan Form Input
+function checkFormValidity() {
+    const nama = document.getElementById("nama-guru")?.value.trim();
+    const kelas = document.getElementById("kelas-ajar")?.value;
+    const noHp = document.getElementById("no-hp")?.value.trim();
+    const alamat = document.getElementById("alamat-guru")?.value.trim();
+    const btnSimpan = document.getElementById("btn-simpan-guru");
+
+    if (!btnSimpan) return;
+
+    // Cek apakah semua input terisi
+    const isValid = nama !== "" && kelas !== "" && kelas !== null && noHp !== "" && alamat !== "";
+
+    // Aktifkan / Matikan tombol simpan
+    btnSimpan.disabled = !isValid;
+}
+
+// Pasang Event Listener pada Setiap Field Input
+function setupFormValidationListeners() {
+    const form = document.getElementById("form-guru");
+    if (!form) return;
+
+    const inputs = form.querySelectorAll("input, select, textarea");
+    inputs.forEach(input => {
+        input.addEventListener("input", checkFormValidity);
+        input.addEventListener("change", checkFormValidity);
+    });
+}
 
 // Render Tampilan List Guru
 function renderGuruList() {
@@ -52,7 +82,6 @@ function openDetailModal(index) {
     document.getElementById("detail-hp").innerText = guru.noHp;
     document.getElementById("detail-alamat").innerText = guru.alamat;
 
-    // Set Aksi Tombol Edit & Delete di Footer Modal
     document.getElementById("btn-action-edit").onclick = function () {
         closeDetailModal();
         openFormModal(true, index);
@@ -97,6 +126,9 @@ function openFormModal(isEdit = false, index = null) {
     }
 
     if (modal) modal.classList.add("active");
+    
+    // Cek status validasi saat modal dibuka
+    checkFormValidity();
 }
 
 function closeFormModal() {
@@ -105,9 +137,10 @@ function closeFormModal() {
     if (modal) modal.classList.remove("active");
     if (form) form.reset();
     activeGuruIndex = null;
+    checkFormValidity();
 }
 
-// Simpan Data (Tambah Baru / Update)
+// Simpan Data
 function saveGuruData(event) {
     event.preventDefault();
 
@@ -119,10 +152,8 @@ function saveGuruData(event) {
     if (!nama || !kelas || !noHp || !alamat) return;
 
     if (activeGuruIndex !== null) {
-        // Mode Update / Edit
         listGuru[activeGuruIndex] = { nama, kelas, noHp, alamat };
     } else {
-        // Mode Tambah Baru
         listGuru.push({ nama, kelas, noHp, alamat });
     }
 
