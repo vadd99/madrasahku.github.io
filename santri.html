@@ -178,9 +178,12 @@
                             <label for="nama-kelas-input">Nama / Tingkat Kelas *</label>
                             <input type="text" id="nama-kelas-input" class="form-input" placeholder="Contoh: Kelas 1, Kelas 2 A" required>
                         </div>
+                        <!-- PILIH GURU DARI DATABASE -->
                         <div class="form-group">
                             <label for="wali-kelas-input">Wali Kelas (Opsional)</label>
-                            <input type="text" id="wali-kelas-input" class="form-input" placeholder="Contoh: Ust. Ahmad / Bu Siti">
+                            <select id="wali-kelas-input" class="form-input">
+                                <option value="">-- Pilih Wali Kelas --</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -264,7 +267,15 @@
 
                 <form id="form-santri" onsubmit="saveSantriData(event)">
                     <div class="modal-body">
-                        <p class="form-note">* Hanya Nama Santri yang wajib diisi. Kolom lain boleh dikosongkan jika belum lengkap.</p>
+                        <p class="form-note">* Hanya Nama Santri dan Kelas yang wajib diisi. Kolom lain boleh dikosongkan.</p>
+
+                        <!-- PILIH / UBAH KELAS -->
+                        <div class="form-group">
+                            <label for="santri-kelas">Kelas Santri *</label>
+                            <select id="santri-kelas" class="form-input" required>
+                                <!-- Dimuat otomatis via JS -->
+                            </select>
+                        </div>
                         
                         <div class="form-group">
                             <label for="santri-nama">Nama Lengkap Santri *</label>
