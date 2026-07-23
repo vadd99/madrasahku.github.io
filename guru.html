@@ -4,26 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Guru - AL-HADI</title>
+    
+    <!-- CSS Wajib Layout & Komponen -->
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
-    <link rel="stylesheet" href="css/style-guru.css">      
+    
+    <!-- CSS Khusus Halaman Guru -->
+    <link rel="stylesheet" href="css/style-guru.css">
+
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dark">
 
+    <!-- Container Utama Layout (Header & Sidebar dimuat oleh main.js) -->
     <div id="layout-wrapper"></div>
 
+    <!-- Template Konten Halaman -->
     <template id="page-content">
-        <div class="empty-placeholder">
-            <div class="empty-icon-box">
-                <i data-lucide="user-check"></i>
+        <div class="guru-page-container">
+            
+            <!-- Toolbar Atas (Judul & Tombol Tambah) -->
+            <div class="page-toolbar">
+                <div class="toolbar-info">
+                    <h2 class="page-title">Data Tenaga Pengajar</h2>
+                    <p class="page-subtitle">Kelola informasi guru dan alokasi kelas mengajar.</p>
+                </div>
+                <button class="btn-primary" onclick="openGuruModal()">
+                    <i data-lucide="user-plus" class="btn-icon"></i>
+                    <span>Tambah Guru</span>
+                </button>
             </div>
-            <h3 class="empty-title">Halaman Data Guru</h3>
-            <p class="empty-desc">Halaman ini belum dikonfigurasi dan akan disiapkan pada tahap pengembangan berikutnya.</p>
+
+            <!-- Area Data Guru -->
+            <div class="guru-content-card">
+                
+                <!-- Tampilan Default (Saat Data Masih Kosong) -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon-wrapper">
+                        <i data-lucide="users-round"></i>
+                    </div>
+                    <h3 class="empty-title">Belum Ada Data Guru</h3>
+                    <p class="empty-desc">Data guru masih kosong. Klik tombol di bawah untuk menambahkan data guru baru.</p>
+                    <button class="btn-primary-outline" onclick="openGuruModal()">
+                        <i data-lucide="plus"></i>
+                        <span>Tambah Data Pertama</span>
+                    </button>
+                </div>
+
+                <!-- Tabel Data Guru (Tersembunyi secara default) -->
+                <div id="table-wrapper" class="table-wrapper hidden">
+                    <table class="guru-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Guru</th>
+                                <th>Mengajar</th>
+                                <th>No. HP / WhatsApp</th>
+                                <th>Alamat</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guru-table-body">
+                            <!-- Data dinamis dimasukkan via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Modal Input Tambah Guru -->
+        <div id="modal-guru" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-header-title">
+                        <i data-lucide="user-plus" class="modal-header-icon"></i>
+                        <h3>Tambah Data Guru</h3>
+                    </div>
+                    <button class="btn-close-modal" onclick="closeGuruModal()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <form id="form-tambah-guru" onsubmit="saveGuruData(event)">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="nama-guru">Nama Lengkap & Gelar</label>
+                            <input type="text" id="nama-guru" class="form-input" placeholder="Contoh: Ustadz Ahmad, S.Pd." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="kelas-ajar">Kelas yang Diajar</label>
+                            <select id="kelas-ajar" class="form-input" required>
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                                <option value="Kelas 1">Kelas 1</option>
+                                <option value="Kelas 2">Kelas 2</option>
+                                <option value="Kelas 3">Kelas 3</option>
+                                <option value="Kelas 4">Kelas 4</option>
+                                <option value="Kelas 5">Kelas 5</option>
+                                <option value="Kelas 6">Kelas 6</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="no-hp">Nomor HP / WhatsApp</label>
+                            <input type="tel" id="no-hp" class="form-input" placeholder="Contoh: 081234567890" pattern="[0-9]{10,15}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="alamat-guru">Alamat Tempat Tinggal</label>
+                            <textarea id="alamat-guru" class="form-input form-textarea" rows="3" placeholder="Masukkan alamat lengkap..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" onclick="closeGuruModal()">Batal</button>
+                        <button type="submit" class="btn btn-save">
+                            <i data-lucide="save"></i>
+                            <span>Simpan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </template>
 
-    <script src="main.js"></script>
+    <!-- Script Wajib Layout Utama & Script Khusus Halaman Guru -->
+    <script src="js/main.js"></script>
+    <script src="js/guru.js"></script>
 </body>
 </html>
