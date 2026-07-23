@@ -1,0 +1,95 @@
+<div class="app-wrapper">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Section -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">AH</div>
+            <div>
+                <div class="brand-title">AL-HADI</div>
+                <div class="brand-subtitle">Sistem Data Santri</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item" data-path="index.html">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="guru.html" class="nav-item" data-path="guru.html">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+                <span>Data Guru</span>
+            </a>
+            <a href="santri.html" class="nav-item" data-path="santri.html">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span>Data Santri</span>
+            </a>
+            <a href="absensi.html" class="nav-item" data-path="absensi.html">
+                <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
+                <span>Absensi Santri</span>
+            </a>
+            <a href="nilai.html" class="nav-item" data-path="nilai.html">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                <span>Rekap Nilai Santri</span>
+            </a>
+            <a href="imtihan.html" class="nav-item" data-path="imtihan.html">
+                <i data-lucide="award" class="w-5 h-5"></i>
+                <span>Rekap Nilai Imtihan</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" onclick="handleLogout()" class="nav-item nav-item-logout">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <button onclick="toggleSidebar()" class="menu-btn" aria-label="Buka Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="header-title">DASHBOARD AL-HADI</h1>
+            </div>
+
+            <div class="header-actions">
+                <!-- Tombol Switch Mode Terang / Gelap (Icon Only) -->
+                <button id="theme-toggle" onclick="toggleTheme()" class="theme-icon-btn" title="Ganti Mode Tema">
+                    <i id="theme-icon" data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+
+                <div class="user-avatar" title="Profil Pengguna">
+                    <i data-lucide="user"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Area Tempat Menampung Isi Halaman -->
+        <main class="content-body" id="main-content-target">
+            <!-- Dynamic Content Will Be Inserted Here -->
+        </main>
+    </div>
+</div>
+
+<!-- Modal Logout Custom -->
+<div id="notification-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i data-lucide="log-out"></i>
+        </div>
+        <h3 class="modal-title">Konfirmasi Logout</h3>
+        <p class="modal-desc">Apakah Anda yakin ingin keluar dari Dashboard Al-Hadi?</p>
+        <div class="modal-actions">
+            <button onclick="closeLogoutModal()" class="btn btn-cancel">Batal</button>
+            <button onclick="confirmLogout()" class="btn btn-danger">Keluar</button>
+        </div>
+    </div>
+</div>
