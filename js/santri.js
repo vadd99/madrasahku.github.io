@@ -18,21 +18,22 @@ let selectedKelasId = null;
 let selectedKelasData = null;
 let selectedSantriId = null;
 
-// Perbaikan: Tangani inisialisasi agar aman dari race condition event 'layoutReady'
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-        if (document.getElementById("view-kelas")) {
-            renderMainView();
-        }
-    });
-} else {
-    if (document.getElementById("view-kelas")) {
+// --- PENANGANAN INISIALISASI AMAN (Mencegah Bentrok dengan absensi.js) ---
+function initSantriView() {
+    // Hanya jalankan jika elemen modul Santri ada di DOM
+    if (document.getElementById("view-santri")) {
         renderMainView();
     }
 }
 
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSantriView);
+} else {
+    initSantriView();
+}
+
 document.addEventListener("layoutReady", function () {
-    renderMainView();
+    initSantriView();
 });
 
 // Render Tampilan Utama (Cek Tampilan Kelas atau Sub-Menu Santri)
@@ -83,7 +84,8 @@ async function loadKelasFromFirebase() {
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
-    if (!viewKelas || !gridContainer) return;
+    // Jika tidak berada di modul santri, hentikan eksekusi
+    if (!viewSantri || !gridContainer) return;
 
     // Atur Toolbar
     if (btnBack) btnBack.classList.add("hidden");
@@ -92,7 +94,7 @@ async function loadKelasFromFirebase() {
     if (btnTambahKelas) btnTambahKelas.classList.remove("hidden");
     if (btnTambahSantri) btnTambahSantri.classList.add("hidden");
 
-    viewKelas.classList.remove("hidden");
+    if (viewKelas) viewKelas.classList.remove("hidden");
     if (viewSantri) viewSantri.classList.add("hidden");
 
     try {
@@ -269,6 +271,8 @@ async function loadSantriFromFirebase(kelasId) {
     const pageSubtitle = document.getElementById("page-subtitle");
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
+
+    if (!viewSantri) return;
 
     if (listKelas.length === 0) {
         try {

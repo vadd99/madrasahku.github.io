@@ -15,11 +15,25 @@ let selectedKelasId = null;
 let selectedSantriId = null;
 
 let activeImtihan = "Imtihan 1";
-let todayAttendance = {}; // Menyimpan sementara status absensi hari ini: { santriId: "hadir" | "izin" | "sakit" | "alpa" }
-let rekapAttendance = {}; // Menyimpan akumulasi rekap imtihan: { santriId: { izin: 0, sakit: 0, alpa: 0 } }
+let todayAttendance = {}; // Menyimpan sementara status absensi hari ini
+let rekapAttendance = {}; // Menyimpan akumulasi rekap imtihan
+
+// --- PENANGANAN INISIALISASI AMAN (Mencegah Bentrok & Race Condition) ---
+function initAbsensiView() {
+    // Hanya jalankan jika elemen halaman absensi benar-benar ada di DOM
+    if (document.getElementById("view-absensi")) {
+        renderMainView();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAbsensiView);
+} else {
+    initAbsensiView();
+}
 
 document.addEventListener("layoutReady", function () {
-    renderMainView();
+    initAbsensiView();
 });
 
 function getTodayISO() {
@@ -52,7 +66,7 @@ async function renderMainView() {
 }
 
 /* ===================================================
-   1. DAFTAR KELAS
+   1. DAFTAR KELAS (ABSENSI)
    =================================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
@@ -64,12 +78,15 @@ async function loadKelasFromFirebase() {
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
 
-    btnBack.classList.add("hidden");
-    pageTitle.innerText = "Absensi Santri";
-    pageSubtitle.innerText = "Pilih kelas untuk mengelola kehadiran santri harian.";
+    // Jika tidak berada di halaman yang memiliki viewAbsensi, batalkan eksekusi
+    if (!viewAbsensi || !gridContainer) return;
 
-    viewKelas.classList.remove("hidden");
-    viewAbsensi.classList.add("hidden");
+    if (btnBack) btnBack.classList.add("hidden");
+    if (pageTitle) pageTitle.innerText = "Absensi Santri";
+    if (pageSubtitle) pageSubtitle.innerText = "Pilih kelas untuk mengelola kehadiran santri harian.";
+
+    if (viewKelas) viewKelas.classList.remove("hidden");
+    if (viewAbsensi) viewAbsensi.classList.add("hidden");
 
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
@@ -87,13 +104,13 @@ async function loadKelasFromFirebase() {
         listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
 
         if (listKelas.length === 0) {
-            emptyState.classList.remove("hidden");
-            gridContainer.classList.add("hidden");
+            if (emptyState) emptyState.classList.remove("hidden");
+            if (gridContainer) gridContainer.classList.add("hidden");
             return;
         }
 
-        emptyState.classList.add("hidden");
-        gridContainer.classList.remove("hidden");
+        if (emptyState) emptyState.classList.add("hidden");
+        if (gridContainer) gridContainer.classList.remove("hidden");
 
         let cardsHtml = "";
         listKelas.forEach((kelas) => {
@@ -112,7 +129,7 @@ async function loadKelasFromFirebase() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
     } catch (error) {
-        console.error("Gagal mengambil data kelas:", error);
+        console.error("Gagal mengambil data kelas absensi:", error);
     }
 }
 
@@ -133,22 +150,24 @@ window.goBackToKelasList = function() {
 async function loadAbsensiSubMenu(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewAbsensi = document.getElementById("view-absensi");
-    const santriContainer = document.getElementById("santri-absensi-container");
 
     const btnBack = document.getElementById("btn-back-kelas");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
 
+    if (!viewAbsensi) return;
+
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
 
-    btnBack.classList.remove("hidden");
-    pageTitle.innerText = `Absensi - ${selectedKelasData.namaKelas}`;
-    pageSubtitle.innerText = `Daftar presensi santri untuk ${selectedKelasData.namaKelas}.`;
+    if (btnBack) btnBack.classList.remove("hidden");
+    if (pageTitle) pageTitle.innerText = `Absensi - ${selectedKelasData.namaKelas}`;
+    if (pageSubtitle) pageSubtitle.innerText = `Daftar presensi santri untuk ${selectedKelasData.namaKelas}.`;
 
-    document.getElementById("today-date-text").innerText = getTodayFormatted();
+    const elDate = document.getElementById("today-date-text");
+    if (elDate) elDate.innerText = getTodayFormatted();
 
-    viewKelas.classList.add("hidden");
-    viewAbsensi.classList.remove("hidden");
+    if (viewKelas) viewKelas.classList.add("hidden");
+    if (viewAbsensi) viewAbsensi.classList.remove("hidden");
 
     try {
         // A. Ambil Daftar Santri di Kelas Ini
@@ -188,7 +207,7 @@ async function loadAbsensiSubMenu(kelasId) {
             });
         });
 
-        // C. Ambil / Set Data Absensi Hari Ini (Default: Hadir)
+        // C. Ambil / Set Data Absensi Hari Ini
         const todayISO = getTodayISO();
         const todayDocRef = doc(db, "absensi", `${kelasId}_${todayISO}`);
         const todayDocSnap = await getDoc(todayDocRef);
@@ -215,6 +234,8 @@ async function loadAbsensiSubMenu(kelasId) {
 
 function renderSantriAbsensiList() {
     const container = document.getElementById("santri-absensi-container");
+    if (!container) return;
+
     if (listSantri.length === 0) {
         container.innerHTML = `<div class="empty-state"><p>Belum ada data santri di kelas ini.</p></div>`;
         return;
@@ -266,8 +287,10 @@ window.openModalStatus = function(santriId) {
     const santri = listSantri.find(s => s.id === santriId);
     if (!santri) return;
 
-    document.getElementById("modal-santri-nama").innerText = santri.nama;
-    document.getElementById("modal-tanggal-text").innerText = getTodayFormatted();
+    const elName = document.getElementById("modal-santri-nama");
+    const elDate = document.getElementById("modal-tanggal-text");
+    if (elName) elName.innerText = santri.nama;
+    if (elDate) elDate.innerText = getTodayFormatted();
 
     const currentStatus = todayAttendance[santriId] || "hadir";
     const radios = document.getElementsByName("status-kehadiran");
@@ -298,7 +321,7 @@ window.applySantriStatusChange = function() {
 
     todayAttendance[selectedSantriId] = chosenStatus;
     closeModalStatus();
-    renderSantriAbsensiList(); // Update UI langsung
+    renderSantriAbsensiList();
 };
 
 /* ===================================================
@@ -321,7 +344,7 @@ window.saveTodayAbsensi = async function() {
     try {
         await setDoc(doc(db, "absensi", docId), payload);
         alert(`Absensi tanggal ${getTodayFormatted()} berhasil disimpan!`);
-        await loadAbsensiSubMenu(selectedKelasId); // Reload untuk perbarui rekap akumulasi
+        await loadAbsensiSubMenu(selectedKelasId);
     } catch (error) {
         console.error("Gagal menyimpan absensi:", error);
         alert("Gagal menyimpan data absensi.");
