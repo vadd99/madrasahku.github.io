@@ -1,169 +1,183 @@
-// Memory Data Sementara
+import { 
+    db, 
+    collection, 
+    getDocs, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc 
+} from "./firebase-init.js";
+
+// Variable Penyimpanan Data Guru dari Firebase
 let listGuru = [];
-let activeGuruIndex = null;
+let selectedGuruId = null;
 
 document.addEventListener("layoutReady", function () {
-    renderGuruList();
-    setupFormValidationListeners(); // Pasang pantauan input form
+    loadGuruFromFirebase();
 });
 
-// Fungsi Memantau Kelengkapan Form Input
-function checkFormValidity() {
-    const nama = document.getElementById("nama-guru")?.value.trim();
-    const kelas = document.getElementById("kelas-ajar")?.value;
-    const noHp = document.getElementById("no-hp")?.value.trim();
-    const alamat = document.getElementById("alamat-guru")?.value.trim();
-    const btnSimpan = document.getElementById("btn-simpan-guru");
-
-    if (!btnSimpan) return;
-
-    // Cek apakah semua input terisi
-    const isValid = nama !== "" && kelas !== "" && kelas !== null && noHp !== "" && alamat !== "";
-
-    // Aktifkan / Matikan tombol simpan
-    btnSimpan.disabled = !isValid;
-}
-
-// Pasang Event Listener pada Setiap Field Input
-function setupFormValidationListeners() {
-    const form = document.getElementById("form-guru");
-    if (!form) return;
-
-    const inputs = form.querySelectorAll("input, select, textarea");
-    inputs.forEach(input => {
-        input.addEventListener("input", checkFormValidity);
-        input.addEventListener("change", checkFormValidity);
-    });
-}
-
-// Render Tampilan List Guru
-function renderGuruList() {
-    const emptyState = document.getElementById("empty-state");
+/* ===================================================
+   1. LOAD DATA GURU DARI FIREBASE
+   =================================================== */
+async function loadGuruFromFirebase() {
+    const emptyState = document.getElementById("empty-state-guru");
     const listContainer = document.getElementById("guru-list-container");
 
-    if (!emptyState || !listContainer) return;
+    try {
+        const querySnapshot = await getDocs(collection(db, "guru"));
+        listGuru = [];
 
-    if (listGuru.length === 0) {
-        emptyState.classList.remove("hidden");
-        listContainer.classList.add("hidden");
-        return;
-    }
+        querySnapshot.forEach((docSnap) => {
+            listGuru.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
 
-    emptyState.classList.add("hidden");
-    listContainer.classList.remove("hidden");
+        if (listGuru.length === 0) {
+            if (emptyState) emptyState.classList.remove("hidden");
+            if (listContainer) listContainer.classList.add("hidden");
+            return;
+        }
 
-    let cardsHtml = "";
-    listGuru.forEach((guru, index) => {
-        cardsHtml += `
-            <div class="guru-card-item" onclick="openDetailModal(${index})">
-                <div class="guru-info">
-                    <div class="guru-name">${guru.nama}</div>
-                    <div><span class="badge">${guru.kelas}</span></div>
+        if (emptyState) emptyState.classList.add("hidden");
+        if (listContainer) listContainer.classList.remove("hidden");
+
+        let listHtml = "";
+        listGuru.forEach((guru, index) => {
+            listHtml += `
+                <div class="guru-item" onclick="openDetailGuruModal('${guru.id}')">
+                    <div class="guru-item-left">
+                        <div class="number-badge">${index + 1}</div>
+                        <div>
+                            <div class="guru-item-name">${guru.nama}</div>
+                            <div class="guru-item-sub">${guru.mapel ? 'Pengampu: ' + guru.mapel : 'NIP/NIG: ' + (guru.nip || '-')}</div>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
-                <i data-lucide="chevron-right" class="chevron-icon"></i>
-            </div>
-        `;
-    });
+            `;
+        });
 
-    listContainer.innerHTML = cardsHtml;
+        if (listContainer) listContainer.innerHTML = listHtml;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+    } catch (error) {
+        console.error("Gagal mengambil data guru:", error);
     }
 }
 
-// Handler Modal Detail
-function openDetailModal(index) {
-    activeGuruIndex = index;
-    const guru = listGuru[index];
+/* ===================================================
+   2. DETAIL, EDIT & SIMPAN DATA GURU
+   =================================================== */
+window.openDetailGuruModal = function(guruId) {
+    selectedGuruId = guruId;
+    const guru = listGuru.find(g => g.id === guruId);
+    if (!guru) return;
 
-    document.getElementById("detail-nama").innerText = guru.nama;
-    document.getElementById("detail-kelas").innerText = guru.kelas;
-    document.getElementById("detail-hp").innerText = guru.noHp;
-    document.getElementById("detail-alamat").innerText = guru.alamat;
+    document.getElementById("detail-guru-nama").innerText = guru.nama || "-";
+    document.getElementById("detail-guru-nip").innerText = guru.nip || "- (Belum ada)";
+    document.getElementById("detail-guru-mapel").innerText = guru.mapel || "- (Belum ada)";
+    document.getElementById("detail-guru-hp").innerText = guru.hp || "- (Belum ada)";
+    document.getElementById("detail-guru-alamat").innerText = guru.alamat || "- (Belum ada)";
 
-    document.getElementById("btn-action-edit").onclick = function () {
-        closeDetailModal();
-        openFormModal(true, index);
+    document.getElementById("btn-edit-guru").onclick = function () {
+        closeDetailGuruModal();
+        openFormGuruModal(true, guruId);
     };
 
-    document.getElementById("btn-action-delete").onclick = function () {
-        deleteGuruData(index);
+    document.getElementById("btn-delete-guru").onclick = function () {
+        deleteGuruData(guruId);
     };
 
     const modal = document.getElementById("modal-detail-guru");
     if (modal) modal.classList.add("active");
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+};
 
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-}
-
-function closeDetailModal() {
+window.closeDetailGuruModal = function() {
     const modal = document.getElementById("modal-detail-guru");
     if (modal) modal.classList.remove("active");
-    activeGuruIndex = null;
-}
+};
 
-// Handler Modal Form (Tambah / Edit)
-function openFormModal(isEdit = false, index = null) {
+window.openFormGuruModal = function(isEdit = false, guruId = null) {
     const modal = document.getElementById("modal-form-guru");
-    const formTitle = document.getElementById("form-title");
-    
-    if (isEdit && index !== null) {
-        activeGuruIndex = index;
-        const guru = listGuru[index];
-        
-        formTitle.innerText = "Edit Data Guru";
-        document.getElementById("nama-guru").value = guru.nama;
-        document.getElementById("kelas-ajar").value = guru.kelas;
-        document.getElementById("no-hp").value = guru.noHp;
-        document.getElementById("alamat-guru").value = guru.alamat;
+    const formTitle = document.getElementById("form-guru-title");
+
+    if (isEdit && guruId) {
+        selectedGuruId = guruId;
+        const guru = listGuru.find(g => g.id === guruId);
+
+        if (formTitle) formTitle.innerText = "Edit Data Guru";
+        document.getElementById("guru-nama").value = guru.nama || "";
+        document.getElementById("guru-nip").value = guru.nip || "";
+        document.getElementById("guru-mapel").value = guru.mapel || "";
+        document.getElementById("guru-hp").value = guru.hp || "";
+        document.getElementById("guru-alamat").value = guru.alamat || "";
     } else {
-        activeGuruIndex = null;
-        formTitle.innerText = "Tambah Data Guru";
-        document.getElementById("form-guru").reset();
+        selectedGuruId = null;
+        if (formTitle) formTitle.innerText = "Tambah Data Guru";
+        const form = document.getElementById("form-guru");
+        if (form) form.reset();
     }
 
     if (modal) modal.classList.add("active");
-    
-    // Cek status validasi saat modal dibuka
-    checkFormValidity();
-}
+};
 
-function closeFormModal() {
+window.closeFormGuruModal = function() {
     const modal = document.getElementById("modal-form-guru");
     const form = document.getElementById("form-guru");
     if (modal) modal.classList.remove("active");
     if (form) form.reset();
-    activeGuruIndex = null;
-    checkFormValidity();
-}
+};
 
-// Simpan Data
-function saveGuruData(event) {
+// Simpan atau Update Guru ke Firebase
+window.saveGuruData = async function(event) {
     event.preventDefault();
 
-    const nama = document.getElementById("nama-guru").value.trim();
-    const kelas = document.getElementById("kelas-ajar").value;
-    const noHp = document.getElementById("no-hp").value.trim();
-    const alamat = document.getElementById("alamat-guru").value.trim();
+    const nama = document.getElementById("guru-nama").value.trim();
+    if (!nama) return;
 
-    if (!nama || !kelas || !noHp || !alamat) return;
+    const guruData = {
+        nama: nama,
+        nip: document.getElementById("guru-nip").value.trim(),
+        mapel: document.getElementById("guru-mapel").value.trim(),
+        hp: document.getElementById("guru-hp").value.trim(),
+        alamat: document.getElementById("guru-alamat").value.trim(),
+        updatedAt: new Date()
+    };
 
-    if (activeGuruIndex !== null) {
-        listGuru[activeGuruIndex] = { nama, kelas, noHp, alamat };
-    } else {
-        listGuru.push({ nama, kelas, noHp, alamat });
+    try {
+        if (selectedGuruId) {
+            // EDIT / UPDATE DATA GURU
+            const guruDocRef = doc(db, "guru", selectedGuruId);
+            await updateDoc(guruDocRef, guruData);
+        } else {
+            // TAMBAH GURU BARU
+            guruData.createdAt = new Date();
+            await addDoc(collection(db, "guru"), guruData);
+        }
+
+        closeFormGuruModal();
+        await loadGuruFromFirebase();
+    } catch (error) {
+        console.error("Gagal menyimpan data guru:", error);
+        alert("Terjadi kesalahan saat menyimpan data guru.");
     }
+};
 
-    renderGuruList();
-    closeFormModal();
-}
+// Hapus Data Guru
+async function deleteGuruData(guruId) {
+    if (!confirm("Apakah Anda yakin ingin menghapus data guru ini?")) return;
 
-// Hapus Data
-function deleteGuruData(index) {
-    listGuru.splice(index, 1);
-    closeDetailModal();
-    renderGuruList();
+    try {
+        const guruDocRef = doc(db, "guru", guruId);
+        await deleteDoc(guruDocRef);
+
+        closeDetailGuruModal();
+        await loadGuruFromFirebase();
+    } catch (error) {
+        console.error("Gagal menghapus guru:", error);
+        alert("Gagal menghapus data guru.");
+    }
 }
