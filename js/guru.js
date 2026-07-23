@@ -1,36 +1,116 @@
-// Array Memory Sementara (Akan tereset saat halaman di-refresh)
+// Memory Data Sementara
 let listGuru = [];
+let activeGuruIndex = null; // Menyimpan index guru yang sedang dibuka di modal detail
 
-// Event Listener menunggu Komponen Layout siap dari main.js
 document.addEventListener("layoutReady", function () {
-    renderGuruTable();
+    renderGuruList();
 });
 
-// Fungsi Buka Modal
-function openGuruModal() {
-    const modal = document.getElementById("modal-guru");
-    if (modal) {
-        modal.classList.add("active");
+// Render Tampilan List Guru
+function renderGuruList() {
+    const emptyState = document.getElementById("empty-state");
+    const listContainer = document.getElementById("guru-list-container");
+
+    if (!emptyState || !listContainer) return;
+
+    if (listGuru.length === 0) {
+        emptyState.classList.remove("hidden");
+        listContainer.classList.add("hidden");
+        return;
+    }
+
+    emptyState.classList.add("hidden");
+    listContainer.classList.remove("hidden");
+
+    let cardsHtml = "";
+    listGuru.forEach((guru, index) => {
+        cardsHtml += `
+            <div class="guru-card-item" onclick="openDetailModal(${index})">
+                <div class="guru-info">
+                    <div class="guru-name">${guru.nama}</div>
+                    <div><span class="badge">${guru.kelas}</span></div>
+                </div>
+                <i data-lucide="chevron-right" class="chevron-icon"></i>
+            </div>
+        `;
+    });
+
+    listContainer.innerHTML = cardsHtml;
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
     }
 }
 
-// Fungsi Tutup Modal & Reset Input
-function closeGuruModal() {
-    const modal = document.getElementById("modal-guru");
-    const form = document.getElementById("form-tambah-guru");
-    if (modal) {
-        modal.classList.remove("active");
-    }
-    if (form) {
-        form.reset();
+// Handler Modal Detail
+function openDetailModal(index) {
+    activeGuruIndex = index;
+    const guru = listGuru[index];
+
+    document.getElementById("detail-nama").innerText = guru.nama;
+    document.getElementById("detail-kelas").innerText = guru.kelas;
+    document.getElementById("detail-hp").innerText = guru.noHp;
+    document.getElementById("detail-alamat").innerText = guru.alamat;
+
+    // Set Aksi Tombol Edit & Delete di Footer Modal
+    document.getElementById("btn-action-edit").onclick = function () {
+        closeDetailModal();
+        openFormModal(true, index);
+    };
+
+    document.getElementById("btn-action-delete").onclick = function () {
+        deleteGuruData(index);
+    };
+
+    const modal = document.getElementById("modal-detail-guru");
+    if (modal) modal.classList.add("active");
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
     }
 }
 
-// Fungsi Simpan Data Sementara
+function closeDetailModal() {
+    const modal = document.getElementById("modal-detail-guru");
+    if (modal) modal.classList.remove("active");
+    activeGuruIndex = null;
+}
+
+// Handler Modal Form (Tambah / Edit)
+function openFormModal(isEdit = false, index = null) {
+    const modal = document.getElementById("modal-form-guru");
+    const formTitle = document.getElementById("form-title");
+    
+    if (isEdit && index !== null) {
+        activeGuruIndex = index;
+        const guru = listGuru[index];
+        
+        formTitle.innerText = "Edit Data Guru";
+        document.getElementById("nama-guru").value = guru.nama;
+        document.getElementById("kelas-ajar").value = guru.kelas;
+        document.getElementById("no-hp").value = guru.noHp;
+        document.getElementById("alamat-guru").value = guru.alamat;
+    } else {
+        activeGuruIndex = null;
+        formTitle.innerText = "Tambah Data Guru";
+        document.getElementById("form-guru").reset();
+    }
+
+    if (modal) modal.classList.add("active");
+}
+
+function closeFormModal() {
+    const modal = document.getElementById("modal-form-guru");
+    const form = document.getElementById("form-guru");
+    if (modal) modal.classList.remove("active");
+    if (form) form.reset();
+    activeGuruIndex = null;
+}
+
+// Simpan Data (Tambah Baru / Update)
 function saveGuruData(event) {
-    event.preventDefault(); // Mencegah reload form browser
+    event.preventDefault();
 
-    // Ambil Nilai dari Input Form
     const nama = document.getElementById("nama-guru").value.trim();
     const kelas = document.getElementById("kelas-ajar").value;
     const noHp = document.getElementById("no-hp").value.trim();
@@ -38,72 +118,21 @@ function saveGuruData(event) {
 
     if (!nama || !kelas || !noHp || !alamat) return;
 
-    // Masukkan ke Array
-    listGuru.push({
-        id: Date.now(),
-        nama: nama,
-        kelas: kelas,
-        noHp: noHp,
-        alamat: alamat
-    });
+    if (activeGuruIndex !== null) {
+        // Mode Update / Edit
+        listGuru[activeGuruIndex] = { nama, kelas, noHp, alamat };
+    } else {
+        // Mode Tambah Baru
+        listGuru.push({ nama, kelas, noHp, alamat });
+    }
 
-    // Refresh Tampilan Tabel & Tutup Modal
-    renderGuruTable();
-    closeGuruModal();
+    renderGuruList();
+    closeFormModal();
 }
 
-// Fungsi Hapus Baris Data
+// Hapus Data
 function deleteGuruData(index) {
     listGuru.splice(index, 1);
-    renderGuruTable();
-}
-
-// Fungsi Render / Render Ulang Tabel Data Guru
-function renderGuruTable() {
-    const emptyState = document.getElementById("empty-state");
-    const tableWrapper = document.getElementById("table-wrapper");
-    const tableBody = document.getElementById("guru-table-body");
-
-    if (!emptyState || !tableWrapper || !tableBody) return;
-
-    // Jika Data Kosong
-    if (listGuru.length === 0) {
-        emptyState.classList.remove("hidden");
-        tableWrapper.classList.add("hidden");
-        return;
-    }
-
-    // Jika Data Ada
-    emptyState.classList.add("hidden");
-    tableWrapper.classList.remove("hidden");
-
-    // Susun HTML Baris Tabel
-    let tableRows = "";
-    listGuru.forEach((guru, index) => {
-        tableRows += `
-            <tr>
-                <td><strong>${index + 1}</strong></td>
-                <td>
-                    <div style="font-weight: 600;">${guru.nama}</div>
-                </td>
-                <td>
-                    <span class="badge">${guru.kelas}</span>
-                </td>
-                <td>${guru.noHp}</td>
-                <td>${guru.alamat}</td>
-                <td class="text-center">
-                    <button class="btn-delete-row" title="Hapus Data" onclick="deleteGuruData(${index})">
-                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-
-    tableBody.innerHTML = tableRows;
-
-    // Re-render Ikon Lucide untuk elemen yang baru dirender
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+    closeDetailModal();
+    renderGuruList();
 }
