@@ -38,7 +38,8 @@
                     <div class="stat-card-body">
                         <span class="stat-label">Total Santri Keseluruhan</span>
                         <div class="stat-value-container">
-                            <span class="stat-value">0</span>
+                            <!-- ID Tambahan untuk JS -->
+                            <span id="total-santri-value" class="stat-value">0</span>
                             <span class="stat-unit">Santri Terdaftar</span>
                         </div>
                     </div>
@@ -51,7 +52,8 @@
                     <div class="stat-card-body">
                         <span class="stat-label">Jumlah Tenaga Pengajar</span>
                         <div class="stat-value-container">
-                            <span class="stat-value">0</span>
+                            <!-- ID Tambahan untuk JS -->
+                            <span id="total-guru-value" class="stat-value">0</span>
                             <span class="stat-unit">Guru Aktif</span>
                         </div>
                     </div>
@@ -68,68 +70,14 @@
                         <i data-lucide="graduation-cap" class="section-icon"></i>
                         Distribusi Santri Per Kelas
                     </h3>
-                    <span class="section-subtitle">Data per jenjang</span>
+                    <span class="section-subtitle">Data per kelas</span>
                 </div>
 
-                <div class="stats-grid-classes">
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat I</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 1</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat II</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 2</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat III</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 3</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat IV</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 4</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat V</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 5</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-card-top">
-                            <span class="class-badge">Tingkat VI</span>
-                            <i data-lucide="book-open" class="class-card-icon"></i>
-                        </div>
-                        <div class="class-name">Kelas 6</div>
-                        <div class="class-value">0</div>
-                        <div class="class-label">Santri</div>
+                <!-- Container Card Kelas Dinamis (Dimuat via JS) -->
+                <div id="stats-grid-classes" class="stats-grid-classes">
+                    <!-- Loading State Awal -->
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px 0;">
+                        Memuat data statistik kelas...
                     </div>
                 </div>
             </div>
@@ -139,6 +87,7 @@
 
     <!-- Script Utama -->
     <script src="js/main.js"></script>
-    <script src="js/index.js"></script>    
+    <!-- Diubah menjadi type="module" agar bisa import Firebase -->
+    <script type="module" src="js/index.js"></script>    
 </body>
 </html>
