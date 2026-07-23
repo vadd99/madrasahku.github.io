@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Santri - AL-HADI</title>
+    
+    <!-- CSS Wajib Layout & Komponen -->
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
-    <link rel="stylesheet" href="css/style-santri.css">      
+    
+    <!-- CSS Khusus Halaman Santri -->
+    <link rel="stylesheet" href="css/style-santri.css">
+
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dark">
@@ -15,15 +20,225 @@
     <div id="layout-wrapper"></div>
 
     <template id="page-content">
-        <div class="empty-placeholder">
-            <div class="empty-icon-box">
-                <i data-lucide="users"></i>
+        <div class="santri-page-container">
+            
+            <!-- TOOLBAR UTAMA -->
+            <div class="page-toolbar">
+                <div class="toolbar-info">
+                    <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
+                        <i data-lucide="arrow-left"></i>
+                        <span>Kembali ke Daftar Kelas</span>
+                    </button>
+                    <h2 class="page-title" id="page-title">Data Santri Per Kelas</h2>
+                    <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk melihat atau mengelola data santri.</p>
+                </div>
+
+                <!-- Tombol Aksi Dinamis (Tambah Kelas / Tambah Santri) -->
+                <div id="toolbar-actions">
+                    <button id="btn-tambah-kelas" class="btn-primary" onclick="openModalKelas()">
+                        <i data-lucide="folder-plus" class="btn-icon"></i>
+                        <span>Tambah Kelas</span>
+                    </button>
+                    <button id="btn-tambah-santri" class="btn-primary hidden" onclick="openFormSantriModal()">
+                        <i data-lucide="user-plus" class="btn-icon"></i>
+                        <span>Tambah Santri</span>
+                    </button>
+                </div>
             </div>
-            <h3 class="empty-title">Halaman Data Santri</h3>
-            <p class="empty-desc">Halaman ini belum dikonfigurasi dan akan disiapkan pada tahap pengembangan berikutnya.</p>
+
+            <!-- AREA KONTEN UTAMA -->
+            <div class="santri-content-card">
+                
+                <!-- VIEW 1: DAFTAR KELAS -->
+                <div id="view-kelas">
+                    <!-- Tampilan Kosong (Belum ada Kelas) -->
+                    <div id="empty-state-kelas" class="empty-state">
+                        <div class="empty-icon-wrapper">
+                            <i data-lucide="school"></i>
+                        </div>
+                        <h3 class="empty-title">Belum Ada Data Kelas</h3>
+                        <p class="empty-desc">Buat kelas terlebih dahulu (misal: Kelas 1, Kelas 2) untuk mulai memasukkan data santri.</p>
+                        <button class="btn-primary-outline" onclick="openModalKelas()">
+                            <i data-lucide="plus"></i>
+                            <span>Tambah Kelas Pertama</span>
+                        </button>
+                    </div>
+
+                    <!-- Grid Card Kelas -->
+                    <div id="kelas-grid-container" class="kelas-grid hidden">
+                        <!-- Card kelas dimuat via JS -->
+                    </div>
+                </div>
+
+                <!-- VIEW 2: SUB-MENU DAFTAR SANTRI DALAM KELAS -->
+                <div id="view-santri" class="hidden">
+                    <!-- Tampilan Kosong (Santri di kelas ini masih kosong) -->
+                    <div id="empty-state-santri" class="empty-state">
+                        <div class="empty-icon-wrapper">
+                            <i data-lucide="user-x"></i>
+                        </div>
+                        <h3 class="empty-title">Belum Ada Santri di Kelas Ini</h3>
+                        <p class="empty-desc">Data santri untuk kelas ini belum diinput. Klik tombol di bawah untuk menambah santri.</p>
+                        <button class="btn-primary-outline" onclick="openFormSantriModal()">
+                            <i data-lucide="user-plus"></i>
+                            <span>Tambah Santri Pertama</span>
+                        </button>
+                    </div>
+
+                    <!-- List Santri Berurutan (1, 2, 3...) -->
+                    <div id="santri-list-container" class="santri-list hidden">
+                        <!-- List nama santri dimuat via JS -->
+                    </div>
+                </div>
+
+            </div>
+
         </div>
+
+        <!-- MODAL 1: TAMBAH KELAS -->
+        <div id="modal-kelas" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-header-title">
+                        <i data-lucide="folder-plus" class="modal-header-icon"></i>
+                        <h3>Tambah Kelas Baru</h3>
+                    </div>
+                    <button class="btn-close-modal" onclick="closeModalKelas()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form onsubmit="saveKelasData(event)">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="nama-kelas-input">Nama / Tingkat Kelas</label>
+                            <input type="text" id="nama-kelas-input" class="form-input" placeholder="Contoh: Kelas 1, Kelas 2 A, Diniyah B" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" onclick="closeModalKelas()">Batal</button>
+                        <button type="submit" class="btn btn-save-active">Simpan Kelas</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL 2: DETAIL DATA SANTRI (Muncul Saat Nama Santri Diklik) -->
+        <div id="modal-detail-santri" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-header-title">
+                        <i data-lucide="user-check" class="modal-header-icon"></i>
+                        <h3>Detail Data Santri</h3>
+                    </div>
+                    <button class="btn-close-modal" onclick="closeDetailSantriModal()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body detail-body">
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Santri</span>
+                        <div id="detail-santri-nama" class="detail-value text-bold">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nomor Induk / NIS</span>
+                        <div id="detail-santri-nis" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Ayah</span>
+                        <div id="detail-santri-ayah" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Ibu</span>
+                        <div id="detail-santri-ibu" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">No. HP / WhatsApp Wali</span>
+                        <div id="detail-santri-hp" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Alamat</span>
+                        <div id="detail-santri-alamat" class="detail-value">-</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer detail-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeDetailSantriModal()">Tutup</button>
+                    <button type="button" class="btn btn-edit" id="btn-edit-santri">
+                        <i data-lucide="edit-3"></i>
+                        <span>Edit</span>
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-delete-santri">
+                        <i data-lucide="trash-2"></i>
+                        <span>Hapus</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 3: FORM INPUT / EDIT SANTRI (Data Tidak Wajib Terisi Semua) -->
+        <div id="modal-form-santri" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-header-title">
+                        <i data-lucide="user-plus" class="modal-header-icon" id="form-santri-icon"></i>
+                        <h3 id="form-santri-title">Tambah Data Santri</h3>
+                    </div>
+                    <button class="btn-close-modal" onclick="closeFormSantriModal()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <form id="form-santri" onsubmit="saveSantriData(event)">
+                    <div class="modal-body">
+                        <p class="form-note">* Hanya Nama Santri yang dianjurkan diisi. Kolom lain boleh dikosongkan jika data belum lengkap.</p>
+                        
+                        <div class="form-group">
+                            <label for="santri-nama">Nama Lengkap Santri *</label>
+                            <input type="text" id="santri-nama" class="form-input" placeholder="Masukkan nama santri..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-nis">Nomor Induk / NIS (Opsional)</label>
+                            <input type="text" id="santri-nis" class="form-input" placeholder="Contoh: 2026001">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-ayah">Nama Ayah (Opsional)</label>
+                            <input type="text" id="santri-ayah" class="form-input" placeholder="Nama ayah santri...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-ibu">Nama Ibu (Opsional)</label>
+                            <input type="text" id="santri-ibu" class="form-input" placeholder="Nama ibu santri...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-hp">Nomor HP / WA Wali (Opsional)</label>
+                            <input type="tel" id="santri-hp" class="form-input" placeholder="08xxxxxxxxxx">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="santri-alamat">Alamat (Opsional)</label>
+                            <textarea id="santri-alamat" class="form-input form-textarea" rows="2" placeholder="Alamat singkat santri..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" onclick="closeFormSantriModal()">Batal</button>
+                        <!-- Tombol Simpan selalu Aktif (Menyala) -->
+                        <button type="submit" class="btn btn-save-active" id="btn-simpan-santri">
+                            <i data-lucide="save"></i>
+                            <span>Simpan Data</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </template>
 
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/santri.js"></script>
 </body>
 </html>
