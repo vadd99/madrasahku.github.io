@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="css/style-components.css">
     <link rel="stylesheet" href="css/style-absensi.css">
     <link rel="stylesheet" href="css/style-rekap.css">
+    <!-- Pastikan file nilai.css dipanggil jika ada beda penamaan file -->
+    <link rel="stylesheet" href="css/style-nilai.css"> 
 
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -27,8 +29,8 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
                 </div>
 
-                <!-- PERBAIKAN: Layout yang lebih rapi menggunakan CSS eksternal -->
-                <div id="nilai-selectors" class="selectors-container" style="display: none;">
+                <!-- PERBAIKAN: Bersih dari inline style, diatur full lewat class CSS -->
+                <div id="nilai-selectors" class="selectors-container hidden">
                     <div class="imtihan-selector-wrapper">
                         <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
@@ -42,7 +44,7 @@
                         <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)">
                             <option value="">-- Pilih Mapel --</option>
                         </select>
-                        <button type="button" class="btn-primary" style="padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; white-space: nowrap; cursor: pointer;" onclick="openModalTambahMapel()">+ Mapel</button>
+                        <button type="button" class="btn-add-mapel" onclick="openModalTambahMapel()">+ Mapel</button>
                     </div>
                 </div>
             </div>
@@ -59,7 +61,6 @@
 
                 <div id="view-absensi" class="hidden">
                     
-                    <!-- PERBAIKAN: Penambahan ID dan Tombol X -->
                     <div id="guide-box-nilai" class="absensi-guide-box">
                         <div class="guide-icon"><i data-lucide="info"></i></div>
                         <div class="guide-text">

@@ -20,13 +20,23 @@
     <template id="page-content">
         <div class="absensi-page-container">
             <div class="page-toolbar">
-                <div class="toolbar-info">
+                
+                <!-- PERBAIKAN: Header dijadikan bentuk Card berikon -->
+                <div class="toolbar-info page-header-card">
                     <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
                         <i data-lucide="arrow-left"></i>
                         <span>Kembali ke Daftar Kelas</span>
                     </button>
-                    <h2 class="page-title" id="page-title">Rekap Nilai Santri</h2>
-                    <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
+                    
+                    <div class="header-content-flex">
+                        <div class="header-icon-wrapper">
+                            <i data-lucide="graduation-cap"></i>
+                        </div>
+                        <div class="header-text-wrapper">
+                            <h2 class="page-title" id="page-title">Rekap Nilai Santri</h2>
+                            <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- PERBAIKAN: Bersih dari inline style, diatur full lewat class CSS -->
