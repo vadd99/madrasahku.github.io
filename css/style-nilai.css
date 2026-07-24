@@ -118,3 +118,22 @@
     background: rgba(239, 68, 68, 0.15); 
     color: #ef4444;
 }
+
+/* === PERBAIKAN TAMPILAN REKAP NILAI (MINI BADGES) === */
+.nilai-badge-container {
+    display: flex;
+    flex-wrap: wrap; /* Kunci agar rapi: turun ke bawah jika penuh */
+    gap: 4px;
+    justify-content: flex-end; /* Supaya rata kanan mendekati ikon edit */
+    max-width: 180px; /* Batasi lebar agar tidak menabrak nama santri di HP */
+}
+
+.nilai-mini-badge {
+    background: rgba(16, 185, 129, 0.15); /* Hijau transparan */
+    color: #10b981; /* Warna teks hijau senada */
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    white-space: nowrap; /* Mencegah teks di dalam badge kecil terpotong */
+}

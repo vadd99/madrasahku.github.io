@@ -277,13 +277,16 @@ function renderSantriNilaiList() {
         const keysTerisi = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "" && nilaiSantri[k] !== null && nilaiSantri[k] !== undefined);
         const hasNilai = keysTerisi.length > 0;
         
-        let badgeClass = hasNilai ? "badge-status-hadir" : "badge-status-empty";
-        let statusLabel = "BELUM ADA NILAI";
+        let rightContent = "";
 
         if (hasNilai) {
-            // Merangkai teks nilai misal: "UH I: 80 | UH II: 90"
-            let rincianList = keysTerisi.map(k => `${k}: <b>${nilaiSantri[k]}</b>`);
-            statusLabel = rincianList.join(" &nbsp;|&nbsp; ");
+            // PERBAIKAN: Buat array mini-badges untuk setiap nilai
+            let rincianList = keysTerisi.map(k => `<span class="nilai-mini-badge"><b>${k}</b>: ${nilaiSantri[k]}</span>`);
+            // Bungkus dalam div container agar bisa di-flex-wrap
+            rightContent = `<div class="nilai-badge-container">${rincianList.join("")}</div>`;
+        } else {
+            // Tampilan jika belum ada nilai sama sekali
+            rightContent = `<span class="badge-status badge-status-empty" style="font-size: 0.7rem; font-weight: normal; text-transform: none;">BELUM ADA NILAI</span>`;
         }
 
         listHtml += `
@@ -298,7 +301,8 @@ function renderSantriNilaiList() {
                     </div>
                 </div>
                 <div class="santri-card-right">
-                    <span class="badge-status ${badgeClass}" style="font-size: 0.7rem; font-weight: normal; text-transform: none;">${statusLabel}</span>
+                    <!-- PERBAIKAN: rightContent disisipkan di sini -->
+                    ${rightContent}
                     <i data-lucide="edit-3" class="chevron-icon"></i>
                 </div>
             </div>
