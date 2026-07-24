@@ -126,19 +126,18 @@
 .success-message { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
 
 @media (max-width: 640px) {
-    /* Kurangi padding ekstrim karena bottom bar tidak lagi melayang menutupi konten */
-    .absensi-content-card { 
-        padding-bottom: 24px; 
-    }
-
     .absensi-bottom-bar { 
-        position: relative; /* Menghilangkan sifat sticky/melayang */
-        bottom: auto;
-        margin-top: 30px; /* Jarak antara daftar santri terakhir dan kotak tombol */
-        margin-bottom: env(safe-area-inset-bottom, 20px); /* Jarak dinamis agar tidak terpotong navigasi HP */
-        box-shadow: none; /* Hilangkan bayangan melayang */
+        position: sticky; 
+        bottom: 0; /* Menempel rata dengan dasar layar */
+        border-bottom-left-radius: 0; /* Buat sudut bawah siku agar menyatu dengan layar */
+        border-bottom-right-radius: 0;
+        margin-left: -20px; /* Tarik lebar penuh mengabaikan padding parent card */
+        margin-right: -20px;
+        /* Tambahkan jarak dari ujung HP (safe-area) agar tombol tidak terpotong */
+        padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 12px)); 
+        box-shadow: 0 -2px 15px rgba(0,0,0,0.4); 
         flex-direction: column; 
-        gap: 12px; 
+        gap: 10px; 
         align-items: stretch; 
         text-align: center; 
     }
@@ -149,6 +148,7 @@
 
     .btn-save-absensi { 
         width: 100%; 
-        padding: 12px; /* Sedikit lebih besar agar nyaman ditekan di HP */
+        padding: 12px;
     }
 }
+
