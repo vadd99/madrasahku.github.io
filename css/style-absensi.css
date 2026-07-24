@@ -125,22 +125,53 @@
 .success-title { font-size: 1.4rem; font-weight: bold; color: var(--text-main); margin-bottom: 8px; }
 .success-message { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
 
+/* Pastikan pengaturan dasar card seperti ini */
+.absensi-page-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    height: 100%; 
+    overflow: hidden; 
+}
+
+.absensi-content-card { 
+    background-color: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-lg); 
+    padding: 16px; 
+    flex: 1;           
+    overflow-y: auto; /* Mengembalikan fungsi scroll di dalam kotak */
+    min-height: 0;
+    position: relative;
+}
+
+/* =========================================================
+   PENGATURAN KHUSUS LAYAR HP
+   ========================================================= */
 @media (max-width: 640px) {
-    /* Kurangi padding ekstrim karena bottom bar tidak lagi melayang menutupi konten */
-    .absensi-content-card { 
-        padding-bottom: 24px; 
+    .absensi-content-card {
+        padding: 12px;
     }
 
     .absensi-bottom-bar { 
-        position: relative; /* Menghilangkan sifat sticky/melayang */
-        bottom: auto;
-        margin-top: 30px; /* Jarak antara daftar santri terakhir dan kotak tombol */
-        margin-bottom: env(safe-area-inset-bottom, 20px); /* Jarak dinamis agar tidak terpotong navigasi HP */
-        box-shadow: none; /* Hilangkan bayangan melayang */
+        position: sticky; 
+        bottom: -12px; /* Ditarik ke ujung bawah agar menyatu dengan batas card */
+        margin-left: -12px; /* Melebarkan background menutupi jarak kiri */
+        margin-right: -12px; /* Melebarkan background menutupi jarak kanan */
+        margin-top: 20px;
+        padding: 16px;
+        background: var(--bg-card); /* Pastikan background tidak transparan */
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.3); /* Sedikit bayangan pembatas */
+        border-radius: 0; 
+        border-top: 1px solid var(--border-color);
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
         flex-direction: column; 
         gap: 12px; 
         align-items: stretch; 
         text-align: center; 
+        z-index: 50;
     }
 
     .today-date-info { 
@@ -149,6 +180,6 @@
 
     .btn-save-absensi { 
         width: 100%; 
-        padding: 12px; /* Sedikit lebih besar agar nyaman ditekan di HP */
+        padding: 12px; 
     }
 }
