@@ -145,6 +145,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
+    padding-bottom: 80px; /* Ruang ekstra agar tidak terpotong layar HP bawah */
 }
 
 .kelas-card-item {
@@ -339,6 +340,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-bottom: 80px; /* Ruang ekstra agar tidak terpotong layar HP bawah */
 }
 
 .santri-item {
@@ -544,10 +546,4 @@
 
 .hidden {
     display: none !important;
-}
-
-/* Memberikan ruang ekstra di bagian paling bawah list/grid agar elemen terakhir tidak mepet */
-#santri-list-container,
-#kelas-grid-container {
-    padding-bottom: 24px;
 }
