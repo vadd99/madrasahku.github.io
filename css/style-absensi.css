@@ -1,3 +1,10 @@
+/* =========================================
+   UTILITY (Sangat Penting agar tidak bertumpuk)
+   ========================================= */
+.hidden {
+    display: none !important;
+}
+
 /* Layout & Container Absensi */
 .absensi-page-container {
     display: flex;
@@ -34,6 +41,98 @@
     font-size: 0.82rem;
     outline: none;
 }
+
+/* =========================================
+   STYLE DAFTAR KELAS & EMPTY STATE
+   ========================================= */
+.kelas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.kelas-card-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.kelas-card-item:hover {
+    border-color: var(--primary-border);
+    transform: translateY(-2px);
+}
+
+.kelas-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kelas-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.kelas-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* EMPTY STATE */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--bg-main);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.empty-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: rgba(16, 185, 129, 0.1); /* Warna hijau menyesuaikan tema absensi */
+    color: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.empty-icon-wrapper i {
+    width: 30px;
+    height: 30px;
+}
+
+.empty-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.empty-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    max-width: 350px;
+    margin: 0 auto 20px auto;
+    line-height: 1.4;
+}
+
+/* =========================================
+   STYLE LIST SANTRI & PANDUAN ABSENSI
+   ========================================= */
 
 /* Box Panduan Absensi */
 .absensi-guide-box {
