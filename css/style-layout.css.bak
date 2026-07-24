@@ -211,6 +211,15 @@
 
 /* Responsif Layar Mobile / Tablet */
 @media (max-width: 1024px) {
+    body {
+        overflow: auto;
+    }
+    
+    .content-body {
+        overflow: visible;
+        height: auto;
+    }
+
     .sidebar {
         position: fixed;
         top: 0;
