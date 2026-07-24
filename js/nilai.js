@@ -15,6 +15,14 @@ let todayNilaiDocId = null;
 let activeUhData = {};
 const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
+// --- FUNGSI UNTUK MENUTUP PANDUAN ---
+window.closeGuideBox = function() {
+    const box = document.getElementById("guide-box-nilai");
+    if (box) {
+        box.style.display = "none";
+    }
+};
+
 // --- METODE INISIALISASI YANG ANTI GAGAL ---
 let isInitialized = false;
 
@@ -121,7 +129,7 @@ async function loadKelasFromFirebase() {
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
     
-    // PERBAIKAN: Sembunyikan bagian pilihan Imtihan & Mapel dengan style.display
+    // Sembunyikan bagian pilihan Imtihan & Mapel dengan style.display
     const selectorsContainer = document.getElementById("nilai-selectors");
     if (selectorsContainer) selectorsContainer.style.display = "none";
 
@@ -195,7 +203,7 @@ async function loadNilaiSubMenu(kelasId) {
     const viewAbsensi = document.getElementById("view-absensi");
     const btnBack = document.getElementById("btn-back-kelas");
 
-    // PERBAIKAN: Munculkan bagian pilihan Imtihan & Mapel dengan mengembalikan display ke "flex"
+    // Munculkan bagian pilihan Imtihan & Mapel dengan mengembalikan display ke "flex"
     const selectorsContainer = document.getElementById("nilai-selectors");
     if (selectorsContainer) selectorsContainer.style.display = "flex";
 

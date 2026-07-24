@@ -27,19 +27,19 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
                 </div>
 
-                <!-- PERBAIKAN: Menggunakan style display: none sebagai default (anti bentrok CSS) -->
-                <div id="nilai-selectors" class="selectors-container" style="display: none; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
-                    <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
-                        <label for="select-imtihan" style="margin: 0;"><i data-lucide="award"></i> Periode:</label>
+                <!-- PERBAIKAN: Layout yang lebih rapi menggunakan CSS eksternal -->
+                <div id="nilai-selectors" class="selectors-container" style="display: none;">
+                    <div class="imtihan-selector-wrapper">
+                        <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
                             <option value="Imtihan 1">Imtihan 1 (Semester Ganjil)</option>
                             <option value="Imtihan 2">Imtihan 2 (Semester Genap)</option>
                         </select>
                     </div>
                     
-                    <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
-                        <label for="select-mapel" style="margin: 0;"><i data-lucide="book"></i> Mapel:</label>
-                        <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)" style="min-width: 140px;">
+                    <div class="imtihan-selector-wrapper">
+                        <label for="select-mapel"><i data-lucide="book"></i> Mapel:</label>
+                        <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)">
                             <option value="">-- Pilih Mapel --</option>
                         </select>
                         <button type="button" class="btn-primary" style="padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; white-space: nowrap; cursor: pointer;" onclick="openModalTambahMapel()">+ Mapel</button>
@@ -58,12 +58,17 @@
                 </div>
 
                 <div id="view-absensi" class="hidden">
-                    <div class="absensi-guide-box">
+                    
+                    <!-- PERBAIKAN: Penambahan ID dan Tombol X -->
+                    <div id="guide-box-nilai" class="absensi-guide-box">
                         <div class="guide-icon"><i data-lucide="info"></i></div>
                         <div class="guide-text">
                             <strong>Panduan Penilaian:</strong>
                             <p>Pastikan Mapel sudah dipilih. Klik nama santri untuk menambahkan nilai Ulangan Harian (UH). Setelah semua nilai diinput, klik tombol <b>Simpan Data Nilai</b> di bawah.</p>
                         </div>
+                        <button class="btn-close-guide" onclick="closeGuideBox()" title="Tutup Panduan">
+                            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                        </button>
                     </div>
 
                     <div id="santri-absensi-container" class="absensi-list-grid"></div>

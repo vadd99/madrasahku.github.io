@@ -27,8 +27,8 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
                 </div>
 
-                <!-- PERBAIKAN: Tambah ID dan hidden secara default -->
-                <div id="nilai-selectors" class="selectors-container hidden" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
+                <!-- PERBAIKAN: Menggunakan style display: none sebagai default (anti bentrok CSS) -->
+                <div id="nilai-selectors" class="selectors-container" style="display: none; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
                     <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
                         <label for="select-imtihan" style="margin: 0;"><i data-lucide="award"></i> Periode:</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">

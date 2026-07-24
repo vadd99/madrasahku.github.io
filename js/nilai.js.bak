@@ -31,7 +31,6 @@ function initRekapView() {
     }
 }
 
-// 1. Coba inisialisasi saat event standar berjalan
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initRekapView);
 } else {
@@ -39,15 +38,13 @@ if (document.readyState === "loading") {
 }
 document.addEventListener("layoutReady", initRekapView);
 
-// 2. Fallback: Pantau DOM jika script utama me-render template terlambat
 const observer = new MutationObserver(() => {
     if (document.getElementById("view-absensi") && !isInitialized) {
         initRekapView();
-        observer.disconnect(); // Hentikan pantauan jika sudah sukses
+        observer.disconnect(); 
     }
 });
 observer.observe(document.documentElement, { childList: true, subtree: true });
-
 
 window.changeImtihanPeriod = function(val) {
     activeImtihan = val;
@@ -113,7 +110,7 @@ window.simpanMapelBaru = async function() {
 }
 
 /* ===================================================
-   LOAD DAFTAR KELAS (DISAMAKAN DENGAN STRUKTUR ABSENSI)
+   LOAD DAFTAR KELAS
    =================================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
@@ -124,9 +121,9 @@ async function loadKelasFromFirebase() {
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
     
-    // Sembunyikan bagian dropdown Imtihan & Mapel
+    // PERBAIKAN: Sembunyikan bagian pilihan Imtihan & Mapel dengan style.display
     const selectorsContainer = document.getElementById("nilai-selectors");
-    if (selectorsContainer) selectorsContainer.classList.add("hidden");
+    if (selectorsContainer) selectorsContainer.style.display = "none";
 
     if (!viewAbsensi || !gridContainer) return;
 
@@ -190,14 +187,17 @@ window.goBackToKelasList = function() {
     renderMainView();
 };
 
+/* ===================================================
+   LOAD DAFTAR SANTRI (SUBMENU)
+   =================================================== */
 async function loadNilaiSubMenu(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewAbsensi = document.getElementById("view-absensi");
     const btnBack = document.getElementById("btn-back-kelas");
 
-    // Munculkan bagian dropdown Imtihan & Mapel
+    // PERBAIKAN: Munculkan bagian pilihan Imtihan & Mapel dengan mengembalikan display ke "flex"
     const selectorsContainer = document.getElementById("nilai-selectors");
-    if (selectorsContainer) selectorsContainer.classList.remove("hidden");
+    if (selectorsContainer) selectorsContainer.style.display = "flex";
 
     if (!viewAbsensi) return;
 
