@@ -272,10 +272,19 @@ function renderSantriNilaiList() {
     let listHtml = "";
     listSantri.forEach((santri, index) => {
         const nilaiSantri = todayNilai[santri.id] || {};
-        const countUh = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "").length;
         
-        let badgeClass = countUh > 0 ? "badge-status-hadir" : "badge-status-empty";
-        let statusLabel = countUh > 0 ? `${countUh} Nilai Terisi` : "BELUM ADA NILAI";
+        // Cek apakah ada nilai yang terisi (tidak kosong)
+        const keysTerisi = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "" && nilaiSantri[k] !== null && nilaiSantri[k] !== undefined);
+        const hasNilai = keysTerisi.length > 0;
+        
+        let badgeClass = hasNilai ? "badge-status-hadir" : "badge-status-empty";
+        let statusLabel = "BELUM ADA NILAI";
+
+        if (hasNilai) {
+            // Merangkai teks nilai misal: "UH I: 80 | UH II: 90"
+            let rincianList = keysTerisi.map(k => `${k}: <b>${nilaiSantri[k]}</b>`);
+            statusLabel = rincianList.join(" &nbsp;|&nbsp; ");
+        }
 
         listHtml += `
             <div class="absensi-santri-card" onclick="openModalNilai('${santri.id}')">
@@ -289,7 +298,7 @@ function renderSantriNilaiList() {
                     </div>
                 </div>
                 <div class="santri-card-right">
-                    <span class="badge-status ${badgeClass}">${statusLabel}</span>
+                    <span class="badge-status ${badgeClass}" style="font-size: 0.7rem; font-weight: normal; text-transform: none;">${statusLabel}</span>
                     <i data-lucide="edit-3" class="chevron-icon"></i>
                 </div>
             </div>
@@ -298,6 +307,7 @@ function renderSantriNilaiList() {
     container.innerHTML = listHtml;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
 
 window.openModalNilai = function(santriId) {
     if(!activeMapel) {
