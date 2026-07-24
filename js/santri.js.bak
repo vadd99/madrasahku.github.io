@@ -113,24 +113,70 @@ async function loadKelasFromFirebase() {
     }
 }
 
+// Memuat daftar guru dari Firebase untuk Dropdown Wali Kelas
+async function populateGuruDropdown(selectedGuruValue = "") {
+    const waliSelect = document.getElementById("wali-kelas-input");
+    if (!waliSelect) return;
+
+    // Set loading state sementara data diambil
+    waliSelect.innerHTML = `<option value="" disabled selected>-- Memuat daftar guru... --</option>`;
+
+    try {
+        const guruSnap = await getDocs(collection(db, "guru"));
+        let listGuru = [];
+
+        // Ambil nama dari setiap dokumen guru
+        guruSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.nama) {
+                listGuru.push(data.nama);
+            }
+        });
+
+        // Urutkan nama guru sesuai abjad
+        listGuru.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+        let optionsHtml = `<option value="" ${!selectedGuruValue ? 'selected' : ''}>-- Pilih Wali Kelas --</option>`;
+
+        if (listGuru.length === 0) {
+            optionsHtml = `<option value="" disabled>-- Belum ada data guru --</option>`;
+        } else {
+            listGuru.forEach((namaGuru) => {
+                const isSelected = (namaGuru === selectedGuruValue) ? "selected" : "";
+                optionsHtml += `<option value="${namaGuru}" ${isSelected}>${namaGuru}</option>`;
+            });
+        }
+
+        waliSelect.innerHTML = optionsHtml;
+
+    } catch (error) {
+        console.error("Gagal memuat daftar guru:", error);
+        waliSelect.innerHTML = `<option value="">-- Gagal memuat data guru --</option>`;
+    }
+}
+
 // Open Modal Tambah / Edit Kelas
-window.openModalKelas = function(isEdit = false) {
+window.openModalKelas = async function(isEdit = false) {
     const modal = document.getElementById("modal-kelas");
     const title = document.getElementById("modal-kelas-title");
     const inputNama = document.getElementById("nama-kelas-input");
-    const inputWali = document.getElementById("wali-kelas-input");
+    
+    // Variabel untuk menyimpan wali kelas saat mode edit
+    let currentWali = "";
 
     if (isEdit && selectedKelasData) {
         title.innerText = "Edit Data Kelas";
         inputNama.value = selectedKelasData.namaKelas || "";
-        inputWali.value = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
+        currentWali = selectedKelasData.waliKelas !== "-" ? selectedKelasData.waliKelas : "";
     } else {
         title.innerText = "Tambah Kelas Baru";
         inputNama.value = "";
-        inputWali.value = "";
     }
 
     if (modal) modal.classList.add("active");
+
+    // Jalankan fungsi populate dropdown guru setiap kali modal terbuka
+    await populateGuruDropdown(currentWali);
 };
 
 window.closeModalKelas = function() {
@@ -356,6 +402,12 @@ window.openFormSantriModal = function(isEdit = false, santriId = null) {
         selectedSantriId = null;
         formTitle.innerText = "Tambah Data Santri";
         document.getElementById("form-santri").reset();
+    }
+    
+    // Setel otomatis pilihan dropdown kelas sesuai kelas yang sedang dibuka
+    const kelasSelect = document.getElementById("santri-kelas");
+    if (kelasSelect && selectedKelasData) {
+        kelasSelect.innerHTML = `<option value="${selectedKelasId}" selected>${selectedKelasData.namaKelas}</option>`;
     }
 
     if (modal) modal.classList.add("active");

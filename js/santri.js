@@ -5,7 +5,8 @@ import {
     addDoc, 
     updateDoc, 
     deleteDoc, 
-    doc 
+    doc,
+    setDoc // <-- TAMBAHAN: Dibutuhkan untuk memindah/menyalin data ke kelas baru
 } from "./firebase-init.js";
 
 // Variable Penyimpanan Sementara dari Firebase
@@ -404,10 +405,16 @@ window.openFormSantriModal = function(isEdit = false, santriId = null) {
         document.getElementById("form-santri").reset();
     }
     
-    // Setel otomatis pilihan dropdown kelas sesuai kelas yang sedang dibuka
+    // MENAMPILKAN SELURUH KELAS DI DROPDOWN AGAR BISA PINDAH KELAS
     const kelasSelect = document.getElementById("santri-kelas");
-    if (kelasSelect && selectedKelasData) {
-        kelasSelect.innerHTML = `<option value="${selectedKelasId}" selected>${selectedKelasData.namaKelas}</option>`;
+    if (kelasSelect) {
+        let optionsHtml = "";
+        listKelas.forEach(kelas => {
+            // Default select ke kelas yang sedang aktif saat ini
+            const isSelected = (kelas.id === selectedKelasId) ? "selected" : "";
+            optionsHtml += `<option value="${kelas.id}" ${isSelected}>${kelas.namaKelas}</option>`;
+        });
+        kelasSelect.innerHTML = optionsHtml;
     }
 
     if (modal) modal.classList.add("active");
@@ -420,12 +427,15 @@ window.closeFormSantriModal = function() {
     if (form) form.reset();
 };
 
-// Simpan atau Update Santri ke Firebase
+// Simpan, Update, atau Pindahkan Santri ke Firebase
 window.saveSantriData = async function(event) {
     event.preventDefault();
 
     const nama = document.getElementById("santri-nama").value.trim();
     if (!nama) return;
+
+    // Ambil Kelas Tujuan dari Input Select
+    const targetKelasId = document.getElementById("santri-kelas").value;
 
     const santriData = {
         nama: nama,
@@ -440,13 +450,32 @@ window.saveSantriData = async function(event) {
 
     try {
         if (selectedSantriId) {
-            // EDIT / UPDATE DATA
-            const santriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
-            await updateDoc(santriDocRef, santriData);
+            // LOGIKA KETIKA EDIT: CEK APAKAH USER MEMILIH KELAS YANG BERBEDA
+            if (targetKelasId !== selectedKelasId) {
+                // PINDAH KELAS TERJADI
+                // 1. Ambil data lama secara utuh (contoh: createdAt) agar tidak hilang saat dipindah
+                const existingSantri = listSantri.find(s => s.id === selectedSantriId);
+                const fullSantriData = { ...existingSantri, ...santriData };
+                delete fullSantriData.id; // Hapus properti "id" agar tidak masuk sebagai field database
+
+                // 2. Buat dokumen baru di sub-koleksi kelas yang baru (dengan ID yang sama)
+                const newSantriDocRef = doc(db, "kelas", targetKelasId, "santri", selectedSantriId);
+                await setDoc(newSantriDocRef, fullSantriData);
+
+                // 3. Hapus dokumen lama dari sub-koleksi kelas asal
+                const oldSantriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
+                await deleteDoc(oldSantriDocRef);
+
+            } else {
+                // KELAS TETAP SAMA: Update data biasa
+                const santriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
+                await updateDoc(santriDocRef, santriData);
+            }
         } else {
-            // TAMBAH DATA BARU
+            // LOGIKA TAMBAH DATA BARU
             santriData.createdAt = new Date();
-            const santriRef = collection(db, "kelas", selectedKelasId, "santri");
+            // Masukkan santri ke kelas target sesuai dropdown (targetKelasId)
+            const santriRef = collection(db, "kelas", targetKelasId, "santri");
             await addDoc(santriRef, santriData);
         }
 
