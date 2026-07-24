@@ -13,7 +13,14 @@ let initialNilai = {};
 let todayNilaiDocId = null; 
 
 let activeUhData = {};
-const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+// Fungsi untuk mengambil angka dari string "UH X" (mendukung angka biasa & romawi lama)
+function getUhNumber(key) {
+    const val = key.replace("UH ", "").trim();
+    const romanMap = { "I":1, "II":2, "III":3, "IV":4, "V":5, "VI":6, "VII":7, "VIII":8, "IX":9, "X":10 };
+    if (romanMap[val]) return romanMap[val];
+    return parseInt(val) || 0;
+}
 
 // --- FUNGSI UNTUK MENUTUP PANDUAN ---
 window.closeGuideBox = function() {
@@ -129,7 +136,6 @@ async function loadKelasFromFirebase() {
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
     
-    // PERBAIKAN: Sembunyikan dengan menambah class 'hidden'
     const selectorsContainer = document.getElementById("nilai-selectors");
     if (selectorsContainer) selectorsContainer.classList.add("hidden");
 
@@ -203,8 +209,6 @@ async function loadNilaiSubMenu(kelasId) {
     const viewAbsensi = document.getElementById("view-absensi");
     const btnBack = document.getElementById("btn-back-kelas");
 
-    // PERBAIKAN: Munculkan dengan menghapus class 'hidden'
-    // Otomatis akan mengikuti flex-direction: column bawaan CSS
     const selectorsContainer = document.getElementById("nilai-selectors");
     if (selectorsContainer) selectorsContainer.classList.remove("hidden");
 
@@ -273,19 +277,18 @@ function renderSantriNilaiList() {
     listSantri.forEach((santri, index) => {
         const nilaiSantri = todayNilai[santri.id] || {};
         
-        // Cek apakah ada nilai yang terisi (tidak kosong)
-        const keysTerisi = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "" && nilaiSantri[k] !== null && nilaiSantri[k] !== undefined);
-        const hasNilai = keysTerisi.length > 0;
+        let keysTerisi = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "" && nilaiSantri[k] !== null && nilaiSantri[k] !== undefined);
         
+        // Mengurutkan keys menggunakan helper getUhNumber
+        keysTerisi.sort((a, b) => getUhNumber(a) - getUhNumber(b));
+
+        const hasNilai = keysTerisi.length > 0;
         let rightContent = "";
 
         if (hasNilai) {
-            // PERBAIKAN: Buat array mini-badges untuk setiap nilai
             let rincianList = keysTerisi.map(k => `<span class="nilai-mini-badge"><b>${k}</b>: ${nilaiSantri[k]}</span>`);
-            // Bungkus dalam div container agar bisa di-flex-wrap
             rightContent = `<div class="nilai-badge-container">${rincianList.join("")}</div>`;
         } else {
-            // Tampilan jika belum ada nilai sama sekali
             rightContent = `<span class="badge-status badge-status-empty" style="font-size: 0.7rem; font-weight: normal; text-transform: none;">BELUM ADA NILAI</span>`;
         }
 
@@ -301,7 +304,6 @@ function renderSantriNilaiList() {
                     </div>
                 </div>
                 <div class="santri-card-right">
-                    <!-- PERBAIKAN: rightContent disisipkan di sini -->
                     ${rightContent}
                     <i data-lucide="edit-3" class="chevron-icon"></i>
                 </div>
@@ -311,7 +313,6 @@ function renderSantriNilaiList() {
     container.innerHTML = listHtml;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
-
 
 window.openModalNilai = function(santriId) {
     if(!activeMapel) {
@@ -327,8 +328,9 @@ window.openModalNilai = function(santriId) {
 
     activeUhData = todayNilai[santriId] ? { ...todayNilai[santriId] } : {};
     
+    // Default nilai menggunakan angka biasa
     if(Object.keys(activeUhData).length === 0) {
-        activeUhData["UH I"] = "";
+        activeUhData["UH 1"] = "";
     }
     
     renderUhInputs();
@@ -343,7 +345,10 @@ function renderUhInputs() {
     const container = document.getElementById("uh-inputs-container");
     container.innerHTML = "";
     
-    Object.keys(activeUhData).forEach((uhKey) => {
+    // Mengurutkan inputan di dalam modal
+    const sortedKeys = Object.keys(activeUhData).sort((a, b) => getUhNumber(a) - getUhNumber(b));
+    
+    sortedKeys.forEach((uhKey) => {
         container.innerHTML += `
             <div class="uh-input-row" style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
                 <label style="width:55px; font-weight:700; color:var(--text-main); font-size: 0.9rem;">${uhKey}</label>
@@ -366,9 +371,15 @@ function saveDOMtoActiveUh() {
 
 window.addUhInput = function() {
     saveDOMtoActiveUh();
-    const currentCount = Object.keys(activeUhData).length;
-    const nextRoman = romanNumerals[currentCount] || (currentCount + 1);
-    activeUhData[`UH ${nextRoman}`] = "";
+    
+    // Mencari angka terbesar, lalu ditambah 1
+    let maxNum = 0;
+    Object.keys(activeUhData).forEach(key => {
+        const num = getUhNumber(key);
+        if (num > maxNum) maxNum = num;
+    });
+    
+    activeUhData[`UH ${maxNum + 1}`] = "";
     renderUhInputs();
 };
 
