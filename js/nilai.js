@@ -1,229 +1,359 @@
-import { db, collection, getDocs, doc, getDoc, setDoc } from "./firebase-init.js";
+import { db, collection, getDocs, addDoc, updateDoc, doc, query, where } from "./firebase-init.js";
 
+let listKelas = [];
 let listSantri = [];
-let totalUH = 1; // Default jumlah ulangan harian
-let currentKelasId = "";
-let currentImtihan = "";
-let currentMapel = "";
+let listMapel = [];
+let selectedKelasId = null;
+let selectedSantriId = null;
+let activeImtihan = "Imtihan 1";
+let activeMapel = "";
 
-document.addEventListener("layoutReady", async function () {
-    await loadKelasOptions();
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-});
+let todayNilai = {}; 
+let initialNilai = {}; 
+let todayNilaiDocId = null; 
 
-// 1. Load Opsi Kelas ke Dropdown
-async function loadKelasOptions() {
-    const selectKelas = document.getElementById("filter-kelas");
-    selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+let activeUhData = {};
+const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+function initRekapView() {
+    if (document.getElementById("view-absensi")) {
+        const selectImtihan = document.getElementById("select-imtihan");
+        if (selectImtihan) activeImtihan = selectImtihan.value;
+        loadMapelFromFirebase();
+        renderMainView();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initRekapView);
+} else {
+    initRekapView();
+}
+
+document.addEventListener("layoutReady", initRekapView);
+
+window.changeImtihanPeriod = function(val) {
+    activeImtihan = val;
+    if (selectedKelasId) loadNilaiSubMenu(selectedKelasId); 
+};
+
+window.changeMapel = function(val) {
+    activeMapel = val;
+    if (selectedKelasId) loadNilaiSubMenu(selectedKelasId);
+};
+
+async function renderMainView() {
+    if (selectedKelasId === null) {
+        await loadKelasFromFirebase();
+    } else {
+        await loadNilaiSubMenu(selectedKelasId);
+    }
+}
+
+async function loadMapelFromFirebase() {
+    try {
+        const mapelSnap = await getDocs(collection(db, "mapel"));
+        listMapel = [];
+        mapelSnap.forEach(doc => {
+            listMapel.push({ id: doc.id, ...doc.data() });
+        });
+        
+        const selectMapel = document.getElementById("select-mapel");
+        if(selectMapel) {
+            let options = '<option value="">-- Pilih Mapel --</option>';
+            listMapel.forEach(m => {
+                options += `<option value="${m.nama}">${m.nama}</option>`;
+            });
+            selectMapel.innerHTML = options;
+            if(activeMapel) selectMapel.value = activeMapel;
+        }
+    } catch(e) { console.error("Gagal meload daftar mapel", e); }
+}
+
+window.openModalTambahMapel = function() {
+    document.getElementById("modal-tambah-mapel").classList.add("active");
+}
+window.closeModalTambahMapel = function() {
+    document.getElementById("modal-tambah-mapel").classList.remove("active");
+}
+
+window.simpanMapelBaru = async function() {
+    const input = document.getElementById("input-nama-mapel").value;
+    if(!input) return;
+    try {
+        await addDoc(collection(db, "mapel"), { nama: input, createdAt: new Date() });
+        closeModalTambahMapel();
+        await loadMapelFromFirebase();
+        
+        document.getElementById("select-mapel").value = input;
+        activeMapel = input;
+        document.getElementById("input-nama-mapel").value = "";
+        
+        if(selectedKelasId) loadNilaiSubMenu(selectedKelasId);
+    } catch(e) { 
+        alert("Gagal menyimpan mapel baru."); 
+    }
+}
+
+async function loadKelasFromFirebase() {
+    const viewKelas = document.getElementById("view-kelas");
+    const viewAbsensi = document.getElementById("view-absensi");
+    const btnBack = document.getElementById("btn-back-kelas");
+    const gridContainer = document.getElementById("kelas-grid-container");
+    const emptyState = document.getElementById("empty-state-kelas");
+    
+    if (btnBack) btnBack.classList.add("hidden");
+    if (viewKelas) viewKelas.classList.remove("hidden");
+    if (viewAbsensi) viewAbsensi.classList.add("hidden");
 
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
-        let kelasArray = [];
-        
+        listKelas = [];
         querySnapshot.forEach((docSnap) => {
-            kelasArray.push({ id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            listKelas.push({
+                id: docSnap.id,
+                namaKelas: data.namaKelas || data.nama || "Kelas Tanpa Nama",
+                waliKelas: data.waliKelas || "-"
+            });
         });
 
-        // Urutkan kelas 1, 2, 3..
-        kelasArray.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
-
-        kelasArray.forEach(k => {
-            selectKelas.innerHTML += `<option value="${k.id}">${k.namaKelas}</option>`;
-        });
-    } catch (error) {
-        console.error("Gagal memuat kelas:", error);
-    }
-}
-
-// 2. Load Form Nilai dan Ambil Data Existing
-window.loadFormNilai = async function() {
-    const kelasId = document.getElementById("filter-kelas").value;
-    const imtihan = document.getElementById("filter-imtihan").value;
-    const mapel = document.getElementById("filter-mapel").value.trim();
-
-    if (!kelasId) return alert("Pilih kelas terlebih dahulu!");
-    if (!mapel) return alert("Isi Mata Pelajaran terlebih dahulu!");
-
-    // Set variable global
-    currentKelasId = kelasId;
-    currentImtihan = imtihan;
-    currentMapel = mapel;
-
-    document.getElementById("judul-tabel-nilai").innerText = `Form Nilai: ${mapel} - ${imtihan}`;
-
-    try {
-        // A. Ambil Data Santri
-        const santriRef = collection(db, "kelas", kelasId, "santri");
-        const santriSnap = await getDocs(santriRef);
-        
-        listSantri = [];
-        santriSnap.forEach(doc => {
-            listSantri.push({ id: doc.id, nama: doc.data().nama });
-        });
-
-        // Sort Abjad
-        listSantri.sort((a, b) => a.nama.localeCompare(b.nama));
-
-        if (listSantri.length === 0) {
-            document.getElementById("nilai-container").classList.add("hidden");
-            document.getElementById("empty-state-nilai").classList.remove("hidden");
+        if (listKelas.length === 0) {
+            emptyState.classList.remove("hidden");
+            gridContainer.classList.add("hidden");
             return;
         }
 
-        document.getElementById("empty-state-nilai").classList.add("hidden");
-        document.getElementById("nilai-container").classList.remove("hidden");
+        emptyState.classList.add("hidden");
+        gridContainer.classList.remove("hidden");
 
-        // B. Cek apakah sudah ada nilai tersimpan di Firebase
-        const docId = `${imtihan.replace(/\s+/g, '_')}_${mapel.replace(/\s+/g, '_').toLowerCase()}`;
-        const nilaiDocRef = doc(db, "kelas", kelasId, "rekap_nilai", docId);
-        const nilaiDocSnap = await getDoc(nilaiDocRef);
-
-        let savedData = {};
-        if (nilaiDocSnap.exists()) {
-            const data = nilaiDocSnap.data();
-            totalUH = data.totalUH || 1; // Load jumlah kolom UH terakhir disave
-            savedData = data.nilaiData || {};
-        } else {
-            totalUH = 1; // Reset ke 1 jika belum ada data
-        }
-
-        renderTabelNilai(savedData);
-
-    } catch (error) {
-        console.error("Gagal memuat form:", error);
-    }
+        let cardsHtml = "";
+        listKelas.forEach((kelas) => {
+            cardsHtml += `
+                <div class="kelas-card-item" onclick="openNilaiSubMenu('${kelas.id}')">
+                    <div class="kelas-info">
+                        <div class="kelas-name">${kelas.namaKelas}</div>
+                        <div class="kelas-count">Wali: ${kelas.waliKelas}</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
+                </div>
+            `;
+        });
+        gridContainer.innerHTML = cardsHtml;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (error) { console.error(error); }
 }
 
-// 3. Render Tabel Header dan Baris Santri
-function renderTabelNilai(savedData = {}) {
-    const headerRow = document.getElementById("tabel-header-row");
-    const tbody = document.getElementById("tabel-body-nilai");
+window.openNilaiSubMenu = function(kelasId) {
+    selectedKelasId = kelasId;
+    renderMainView();
+};
 
-    // Render Header Dinamis
-    let headerHTML = `<th class="col-no">No</th><th class="col-nama">Nama Santri</th>`;
-    for (let i = 1; i <= totalUH; i++) {
-        headerHTML += `<th class="col-uh">UH ${i}</th>`;
-    }
-    // Tambah kolom Rata-Rata (Opsional, untuk profesionalitas)
-    headerHTML += `<th class="col-avg">Rata-rata</th>`;
-    headerRow.innerHTML = headerHTML;
+window.goBackToKelasList = function() {
+    selectedKelasId = null;
+    selectedSantriId = null;
+    renderMainView();
+};
 
-    // Render Baris Santri
-    let bodyHTML = "";
-    listSantri.forEach((santri, index) => {
-        let rowHTML = `<tr class="santri-row" data-id="${santri.id}">
-            <td class="col-no text-center">${index + 1}</td>
-            <td class="col-nama font-semibold">${santri.nama}</td>`;
-        
-        let totalNilai = 0;
-        let countIsi = 0;
+async function loadNilaiSubMenu(kelasId) {
+    document.getElementById("view-kelas").classList.add("hidden");
+    document.getElementById("view-absensi").classList.remove("hidden");
+    document.getElementById("btn-back-kelas").classList.remove("hidden");
 
-        for (let i = 1; i <= totalUH; i++) {
-            // Ambil nilai tersimpan atau kosong
-            let nilai = savedData[santri.id] ? (savedData[santri.id][`uh${i}`] || "") : "";
-            if (nilai !== "") {
-                totalNilai += Number(nilai);
-                countIsi++;
-            }
-
-            rowHTML += `<td class="col-uh">
-                <input type="number" class="input-nilai input-uh-${i}" min="0" max="100" value="${nilai}" oninput="hitungRataRata('${santri.id}')">
-            </td>`;
-        }
-
-        let avg = countIsi > 0 ? (totalNilai / countIsi).toFixed(1) : "0";
-
-        rowHTML += `<td class="col-avg text-center font-bold text-accent" id="avg-${santri.id}">${avg}</td></tr>`;
-        bodyHTML += rowHTML;
-    });
-
-    tbody.innerHTML = bodyHTML;
-}
-
-// 4. Tambah Kolom UH
-window.tambahKolomUH = function() {
-    if (totalUH >= 10) return alert("Maksimal 10 Ulangan Harian!");
-    
-    // Simpan data inputan saat ini sebelum render ulang
-    const currentInputData = captureCurrentInputs();
-    
-    totalUH++;
-    renderTabelNilai(currentInputData);
-}
-
-// 5. Hapus Kolom UH
-window.hapusKolomUHTerakhir = function() {
-    if (totalUH <= 1) return alert("Minimal harus ada 1 Ulangan Harian!");
-    
-    if(!confirm(`Hapus kolom UH ${totalUH}? Data di kolom tersebut akan hilang.`)) return;
-
-    const currentInputData = captureCurrentInputs();
-    totalUH--;
-    renderTabelNilai(currentInputData);
-}
-
-// 6. Ambil data inputan yang belum disave (mencegah reset saat tambah kolom)
-function captureCurrentInputs() {
-    const rows = document.querySelectorAll(".santri-row");
-    let temp = {};
-    
-    rows.forEach(row => {
-        const sid = row.dataset.id;
-        temp[sid] = {};
-        for (let i = 1; i <= totalUH; i++) {
-            const val = row.querySelector(`.input-uh-${i}`).value;
-            temp[sid][`uh${i}`] = val;
-        }
-    });
-    return temp;
-}
-
-// 7. Hitung Rata-rata otomatis saat diketik
-window.hitungRataRata = function(santriId) {
-    const row = document.querySelector(`tr[data-id="${santriId}"]`);
-    if (!row) return;
-
-    let total = 0;
-    let count = 0;
-
-    for (let i = 1; i <= totalUH; i++) {
-        const val = row.querySelector(`.input-uh-${i}`).value;
-        if (val !== "") {
-            total += Number(val);
-            count++;
-        }
-    }
-
-    const avgCell = document.getElementById(`avg-${santriId}`);
-    avgCell.innerText = count > 0 ? (total / count).toFixed(1) : "0";
-}
-
-// 8. Simpan Nilai ke Firebase
-window.simpanDataNilai = async function() {
-    const btnSave = document.querySelector(".btn-save-active");
-    btnSave.innerHTML = `<i data-lucide="loader" class="spin"></i> Menyimpan...`;
-    btnSave.disabled = true;
-
-    const nilaiData = captureCurrentInputs();
-    const docId = `${currentImtihan.replace(/\s+/g, '_')}_${currentMapel.replace(/\s+/g, '_').toLowerCase()}`;
-    const docRef = doc(db, "kelas", currentKelasId, "rekap_nilai", docId);
+    const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
+    document.getElementById("page-title").innerText = `Rekap Nilai - ${selectedKelasData.namaKelas}`;
 
     try {
-        await setDoc(docRef, {
-            imtihan: currentImtihan,
-            mapel: currentMapel,
-            totalUH: totalUH,
-            nilaiData: nilaiData,
-            updatedAt: new Date()
+        const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
+        listSantri = [];
+        santriSnap.forEach((docSnap) => {
+            listSantri.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        alert("Berhasil! Data Rekap Nilai berhasil disimpan.");
-    } catch (error) {
-        console.error("Gagal simpan nilai:", error);
-        alert("Gagal menyimpan data nilai!");
-    } finally {
-        btnSave.innerHTML = `<i data-lucide="save"></i> <span>Simpan Rekap Nilai</span>`;
-        btnSave.disabled = false;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        todayNilai = {};
+        todayNilaiDocId = null;
+        
+        if (activeMapel) {
+            const q = query(collection(db, "rekap_nilai"), 
+                where("kelasId", "==", kelasId),
+                where("imtihan", "==", activeImtihan),
+                where("mapel", "==", activeMapel)
+            );
+            const nilaiSnap = await getDocs(q);
+            
+            nilaiSnap.forEach(docSnap => {
+                todayNilaiDocId = docSnap.id;
+                todayNilai = docSnap.data().dataNilai || {};
+            });
+        }
+
+        initialNilai = JSON.parse(JSON.stringify(todayNilai));
+        checkUnsavedChanges(); 
+        renderSantriNilaiList();
+    } catch (error) { console.error(error); }
+}
+
+function checkUnsavedChanges() {
+    const btnSave = document.getElementById("btn-save-absensi");
+    if (!btnSave) return;
+    
+    const isChanged = JSON.stringify(todayNilai) !== JSON.stringify(initialNilai);
+    if (isChanged && activeMapel) {
+        btnSave.removeAttribute("disabled");
+    } else {
+        btnSave.setAttribute("disabled", "true");
     }
 }
+
+function renderSantriNilaiList() {
+    const container = document.getElementById("santri-absensi-container");
+    if (!container) return;
+
+    if (listSantri.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Belum ada data santri di kelas ini.</p></div>`;
+        return;
+    }
+
+    let listHtml = "";
+    listSantri.forEach((santri, index) => {
+        const nilaiSantri = todayNilai[santri.id] || {};
+        const countUh = Object.keys(nilaiSantri).filter(k => nilaiSantri[k] !== "").length;
+        
+        let badgeClass = countUh > 0 ? "badge-status-hadir" : "badge-status-empty";
+        let statusLabel = countUh > 0 ? `${countUh} Nilai Terisi` : "BELUM ADA NILAI";
+
+        listHtml += `
+            <div class="absensi-santri-card" onclick="openModalNilai('${santri.id}')">
+                <div class="santri-card-left">
+                    <div class="number-badge">${index + 1}</div>
+                    <div class="santri-info">
+                        <div class="santri-name">${santri.nama}</div>
+                        <div class="santri-rekap-counters">
+                            <span class="rekap-pill">Mapel: <b>${activeMapel || "-"}</b></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="santri-card-right">
+                    <span class="badge-status ${badgeClass}">${statusLabel}</span>
+                    <i data-lucide="edit-3" class="chevron-icon"></i>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = listHtml;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+window.openModalNilai = function(santriId) {
+    if(!activeMapel) {
+        alert("Silakan pilih Mapel terlebih dahulu atau tambahkan Mapel baru.");
+        return;
+    }
+    
+    selectedSantriId = santriId;
+    const santri = listSantri.find(s => s.id === santriId);
+    
+    document.getElementById("modal-santri-nama-nilai").innerText = santri.nama;
+    document.getElementById("modal-mapel-text").innerText = activeMapel;
+
+    activeUhData = todayNilai[santriId] ? { ...todayNilai[santriId] } : {};
+    
+    if(Object.keys(activeUhData).length === 0) {
+        activeUhData["UH I"] = "";
+    }
+    
+    renderUhInputs();
+    document.getElementById("modal-input-nilai").classList.add("active");
+};
+
+window.closeModalNilai = function() {
+    document.getElementById("modal-input-nilai").classList.remove("active");
+};
+
+function renderUhInputs() {
+    const container = document.getElementById("uh-inputs-container");
+    container.innerHTML = "";
+    
+    Object.keys(activeUhData).forEach((uhKey) => {
+        container.innerHTML += `
+            <div class="uh-input-row" style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
+                <label style="width:55px; font-weight:700; color:var(--text-main); font-size: 0.9rem;">${uhKey}</label>
+                <input type="number" id="input-${uhKey.replace(/\s+/g, '-')}" value="${activeUhData[uhKey]}" class="form-input-sm" style="flex:1; padding:10px;" placeholder="Masukkan Nilai...">
+                <button class="btn-cancel" style="padding:10px; border:none; border-radius:6px; background:rgba(239, 68, 68, 0.15); color:#ef4444; cursor:pointer;" onclick="deleteUh('${uhKey}')">
+                    <i data-lucide="trash-2" style="width:18px;"></i>
+                </button>
+            </div>
+        `;
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function saveDOMtoActiveUh() {
+    Object.keys(activeUhData).forEach(key => {
+        const el = document.getElementById(`input-${key.replace(/\s+/g, '-')}`);
+        if(el) activeUhData[key] = el.value;
+    });
+}
+
+window.addUhInput = function() {
+    saveDOMtoActiveUh();
+    const currentCount = Object.keys(activeUhData).length;
+    const nextRoman = romanNumerals[currentCount] || (currentCount + 1);
+    activeUhData[`UH ${nextRoman}`] = "";
+    renderUhInputs();
+};
+
+window.deleteUh = function(key) {
+    saveDOMtoActiveUh();
+    delete activeUhData[key];
+    renderUhInputs();
+};
+
+window.simpanNilaiSantriModal = function() {
+    saveDOMtoActiveUh();
+    todayNilai[selectedSantriId] = activeUhData;
+    
+    closeModalNilai();
+    renderSantriNilaiList(); 
+    checkUnsavedChanges(); 
+};
+
+window.saveAllNilai = async function() {
+    if (!selectedKelasId || !activeMapel) return;
+
+    const payload = {
+        kelasId: selectedKelasId,
+        imtihan: activeImtihan,
+        mapel: activeMapel,
+        dataNilai: todayNilai,
+        updatedAt: new Date()
+    };
+
+    try {
+        const btnSave = document.getElementById('btn-save-absensi');
+        const originalText = btnSave.innerHTML;
+        btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i><span>Menyimpan...</span>`;
+        
+        if (todayNilaiDocId) {
+            await updateDoc(doc(db, "rekap_nilai", todayNilaiDocId), payload);
+        } else {
+            const docRef = await addDoc(collection(db, "rekap_nilai"), payload);
+            todayNilaiDocId = docRef.id;
+        }
+        
+        btnSave.innerHTML = originalText;
+        initialNilai = JSON.parse(JSON.stringify(todayNilai));
+        checkUnsavedChanges();
+        
+        document.getElementById("success-message").innerText = `Rekap nilai mapel ${activeMapel} berhasil disimpan ke database.`;
+        document.getElementById("modal-success-alert").classList.add("active");
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (error) {
+        console.error(error);
+        alert("Gagal menyimpan data nilai ke Firebase.");
+    }
+};
+
+window.closeSuccessModal = function() {
+    document.getElementById("modal-success-alert").classList.remove("active");
+};

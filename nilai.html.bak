@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekap Nilai Santri - AL-HADI</title>
+    
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
-    <link rel="stylesheet" href="css/style-nilai.css">      
+    <!-- Tambahkan CSS khusus Nilai -->
+    <link rel="stylesheet" href="css/style-nilai.css">
+
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dark">
@@ -15,15 +18,99 @@
     <div id="layout-wrapper"></div>
 
     <template id="page-content">
-        <div class="empty-placeholder">
-            <div class="empty-icon-box">
-                <i data-lucide="file-spreadsheet"></i>
+        <div class="nilai-page-container">
+            
+            <!-- TOOLBAR -->
+            <div class="page-toolbar">
+                <div class="toolbar-info">
+                    <h2 class="page-title">Rekap Nilai Ulangan Harian</h2>
+                    <p class="page-subtitle">Kelola dan input nilai ulangan harian (UH) santri secara berkala.</p>
+                </div>
             </div>
-            <h3 class="empty-title">Halaman Rekap Nilai Santri</h3>
-            <p class="empty-desc">Halaman ini belum dikonfigurasi dan akan disiapkan pada tahap pengembangan berikutnya.</p>
+
+            <!-- FILTER CARD -->
+            <div class="filter-card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Pilih Kelas</label>
+                        <select id="filter-kelas" class="form-input">
+                            <option value="">-- Memuat Kelas... --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Pilih Imtihan</label>
+                        <select id="filter-imtihan" class="form-input">
+                            <option value="Imtihan I">Imtihan I (Ganjil)</option>
+                            <option value="Imtihan II">Imtihan II (Genap)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mata Pelajaran</label>
+                        <input type="text" id="filter-mapel" class="form-input" placeholder="Contoh: Fiqih, Nahwu...">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-primary" onclick="loadFormNilai()">
+                        <i data-lucide="search"></i>
+                        <span>Tampilkan Form Nilai</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABEL NILAI (Hidden By Default) -->
+            <div id="nilai-container" class="nilai-card hidden">
+                <div class="nilai-header">
+                    <h3 id="judul-tabel-nilai">Form Nilai</h3>
+                    <div class="nilai-actions">
+                        <button class="btn-action-sm btn-outline" onclick="tambahKolomUH()">
+                            <i data-lucide="plus-circle"></i>
+                            <span>Tambah UH</span>
+                        </button>
+                        <button class="btn-action-sm btn-outline btn-danger-outline" onclick="hapusKolomUHTerakhir()">
+                            <i data-lucide="minus-circle"></i>
+                            <span>Hapus UH</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="nilai-table">
+                        <thead>
+                            <tr id="tabel-header-row">
+                                <th class="col-no">No</th>
+                                <th class="col-nama">Nama Santri</th>
+                                <!-- Kolom UH akan digenerate via JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-body-nilai">
+                            <!-- Data Santri digenerate via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="nilai-footer">
+                    <p class="form-note">* Nilai otomatis tersimpan sementara di form, pastikan klik tombol <b>Simpan Rekap Nilai</b> ke database.</p>
+                    <button class="btn-save-active" onclick="simpanDataNilai()">
+                        <i data-lucide="save"></i>
+                        <span>Simpan Rekap Nilai</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- EMPTY STATE JIKA TIDAK ADA SANTRI -->
+            <div id="empty-state-nilai" class="empty-state hidden">
+                <div class="empty-icon-wrapper">
+                    <i data-lucide="users-x"></i>
+                </div>
+                <h3 class="empty-title">Tidak Ada Data Santri</h3>
+                <p class="empty-desc">Kelas yang dipilih belum memiliki data santri. Silakan tambah santri terlebih dahulu di menu Data Santri.</p>
+            </div>
+
         </div>
     </template>
 
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
+    <script type="module" src="js/nilai.js"></script>
+
 </body>
 </html>
