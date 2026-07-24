@@ -6,7 +6,20 @@
 .btn-back { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 16px; transition: all 0.2s ease; }
 .btn-back:hover { background: #10b981; color: #ffffff; }
 
-.imtihan-selector-wrapper { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); }
+/* Selector Imtihan Header */
+.imtihan-selector-wrapper { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    background: var(--bg-card); 
+    padding: 6px 12px; 
+    border-radius: var(--radius-md); 
+    border: 1px solid var(--border-color); 
+    font-size: 0.85rem; 
+    color: var(--text-muted); 
+    margin-top: 16px; /* <--- INI TAMBAHANNYA AGAR BERJARAK */
+}
+
 .form-input-sm { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 0.82rem; outline: none; }
 
 .kelas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
