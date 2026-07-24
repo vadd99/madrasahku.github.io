@@ -95,23 +95,14 @@ window.simpanMapelBaru = async function() {
     }
 }
 
-/* ===================================================
-   LOAD DAFTAR KELAS (DISAMAKAN DENGAN STRUKTUR ABSENSI)
-   =================================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
     const viewAbsensi = document.getElementById("view-absensi");
-    const emptyState = document.getElementById("empty-state-kelas");
-    const gridContainer = document.getElementById("kelas-grid-container");
     const btnBack = document.getElementById("btn-back-kelas");
-    const pageTitle = document.getElementById("page-title");
-    const pageSubtitle = document.getElementById("page-subtitle");
-
-    if (!viewAbsensi || !gridContainer) return;
-
+    const gridContainer = document.getElementById("kelas-grid-container");
+    const emptyState = document.getElementById("empty-state-kelas");
+    
     if (btnBack) btnBack.classList.add("hidden");
-    if (pageTitle) pageTitle.innerText = "Rekap Nilai Santri";
-    if (pageSubtitle) pageSubtitle.innerText = "Pilih kelas untuk mengelola nilai harian santri.";
     if (viewKelas) viewKelas.classList.remove("hidden");
     if (viewAbsensi) viewAbsensi.classList.add("hidden");
 
@@ -127,16 +118,14 @@ async function loadKelasFromFirebase() {
             });
         });
 
-        listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
-
         if (listKelas.length === 0) {
-            if (emptyState) emptyState.classList.remove("hidden");
-            if (gridContainer) gridContainer.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+            gridContainer.classList.add("hidden");
             return;
         }
 
-        if (emptyState) emptyState.classList.add("hidden");
-        if (gridContainer) gridContainer.classList.remove("hidden");
+        emptyState.classList.add("hidden");
+        gridContainer.classList.remove("hidden");
 
         let cardsHtml = "";
         listKelas.forEach((kelas) => {
@@ -150,12 +139,9 @@ async function loadKelasFromFirebase() {
                 </div>
             `;
         });
-        
         gridContainer.innerHTML = cardsHtml;
         if (typeof lucide !== 'undefined') lucide.createIcons();
-    } catch (error) { 
-        console.error("Gagal mengambil data kelas nilai:", error); 
-    }
+    } catch (error) { console.error(error); }
 }
 
 window.openNilaiSubMenu = function(kelasId) {
@@ -170,15 +156,9 @@ window.goBackToKelasList = function() {
 };
 
 async function loadNilaiSubMenu(kelasId) {
-    const viewKelas = document.getElementById("view-kelas");
-    const viewAbsensi = document.getElementById("view-absensi");
-    const btnBack = document.getElementById("btn-back-kelas");
-
-    if (!viewAbsensi) return;
-
-    if (viewKelas) viewKelas.classList.add("hidden");
-    if (viewAbsensi) viewAbsensi.classList.remove("hidden");
-    if (btnBack) btnBack.classList.remove("hidden");
+    document.getElementById("view-kelas").classList.add("hidden");
+    document.getElementById("view-absensi").classList.remove("hidden");
+    document.getElementById("btn-back-kelas").classList.remove("hidden");
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Rekap Nilai - ${selectedKelasData.namaKelas}`;
@@ -189,7 +169,6 @@ async function loadNilaiSubMenu(kelasId) {
         santriSnap.forEach((docSnap) => {
             listSantri.push({ id: docSnap.id, ...docSnap.data() });
         });
-        listSantri.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
         todayNilai = {};
         todayNilaiDocId = null;
@@ -354,7 +333,6 @@ window.saveAllNilai = async function() {
         const btnSave = document.getElementById('btn-save-absensi');
         const originalText = btnSave.innerHTML;
         btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i><span>Menyimpan...</span>`;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
         
         if (todayNilaiDocId) {
             await updateDoc(doc(db, "rekap_nilai", todayNilaiDocId), payload);
@@ -364,8 +342,6 @@ window.saveAllNilai = async function() {
         }
         
         btnSave.innerHTML = originalText;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        
         initialNilai = JSON.parse(JSON.stringify(todayNilai));
         checkUnsavedChanges();
         
