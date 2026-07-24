@@ -219,3 +219,55 @@
         width: 100%; /* Tombol memenuhi lebar layar di HP */
     }
 }
+/* =========================================
+   TOMBOL MODAL (PILIH & SIMPAN / BATAL)
+   ========================================= */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-footer .btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tombol Batal */
+.modal-footer .btn-cancel {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.modal-footer .btn-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+/* Tombol Pilih & Simpan (Hijau Terang) */
+.modal-footer .btn-save-active {
+    background-color: #10b981 !important; /* Memaksa warna hijau */
+    color: #ffffff !important; /* Memaksa teks putih */
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.modal-footer .btn-save-active:hover {
+    background-color: #059669 !important; /* Hijau sedikit lebih gelap saat hover */
+}
+
+.modal-footer .btn-save-active:active {
+    transform: scale(0.95);
+}
+

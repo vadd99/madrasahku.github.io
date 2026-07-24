@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Santri - AL-HADI</title>
     
+    <!-- CSS Wajib Layout & Komponen -->
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
+    
+    <!-- CSS Khusus Halaman Absensi -->
     <link rel="stylesheet" href="css/style-absensi.css">
 
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -19,6 +22,7 @@
     <template id="page-content">
         <div class="absensi-page-container">
             
+            <!-- TOOLBAR UTAMA -->
             <div class="page-toolbar">
                 <div class="toolbar-info">
                     <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
@@ -29,6 +33,7 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola kehadiran santri harian.</p>
                 </div>
 
+                <!-- SELECTOR PERIODE IMTIHAN -->
                 <div class="imtihan-selector-wrapper">
                     <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
                     <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
@@ -38,42 +43,59 @@
                 </div>
             </div>
 
+            <!-- AREA KONTEN UTAMA -->
             <div class="absensi-content-card">
                 
+                <!-- VIEW 1: DAFTAR KELAS -->
                 <div id="view-kelas">
                     <div id="empty-state-kelas" class="empty-state">
-                        <div class="empty-icon-wrapper"><i data-lucide="school"></i></div>
+                        <div class="empty-icon-wrapper">
+                            <i data-lucide="school"></i>
+                        </div>
                         <h3 class="empty-title">Belum Ada Data Kelas</h3>
                         <p class="empty-desc">Tambahkan kelas terlebih dahulu pada menu Data Santri untuk mulai melakukan absensi.</p>
                     </div>
-                    <div id="kelas-grid-container" class="kelas-grid hidden"></div>
+
+                    <div id="kelas-grid-container" class="kelas-grid hidden">
+                        <!-- Card kelas dimuat via JS -->
+                    </div>
                 </div>
 
+                <!-- VIEW 2: LIST ABSENSI SANTRI -->
                 <div id="view-absensi" class="hidden">
+                    
+                    <!-- BOX PANDUAN ABSENSI -->
                     <div class="absensi-guide-box">
-                        <div class="guide-icon"><i data-lucide="info"></i></div>
+                        <div class="guide-icon">
+                            <i data-lucide="info"></i>
+                        </div>
                         <div class="guide-text">
                             <strong>Panduan Absensi:</strong>
                             <p>Klik pada nama santri untuk mengubah status (Hadir, Izin, Sakit, Alpa). Secara default semua santri di-set <b>Hadir</b>. Jangan lupa klik tombol <b>Simpan Absensi Hari Ini</b> di bawah setelah selesai.</p>
                         </div>
                     </div>
 
-                    <div id="santri-absensi-container" class="absensi-list-grid"></div>
+                    <!-- LIST SANTRI -->
+                    <div id="santri-absensi-container" class="absensi-list-grid">
+                        <!-- List santri dimuat via JS -->
+                    </div>
 
+                    <!-- BOTTOM BAR SIMPAN ABSENSI HARI INI -->
                     <div class="absensi-bottom-bar">
                         <div class="today-date-info">
                             <i data-lucide="calendar"></i>
                             <span id="today-date-text">Rabu, 24 Juli 2026</span>
                         </div>
-                        <!-- BUTTON SIMPAN DENGAN ID DAN KONDISI AWAL DISABLED -->
-                        <button id="btn-save-absensi" class="btn-primary btn-save-absensi" onclick="saveTodayAbsensi()" disabled>
+                        <button class="btn-primary btn-save-absensi" onclick="saveTodayAbsensi()">
                             <i data-lucide="check-circle-2"></i>
                             <span>Simpan Absensi Hari Ini</span>
                         </button>
                     </div>
+
                 </div>
 
             </div>
+
         </div>
 
         <!-- MODAL PILIH STATUS ABSENSI -->
@@ -95,22 +117,38 @@
                         <span id="modal-tanggal-text" class="text-date-badge">Rabu, 24 Juli 2026</span>
                     </div>
 
+                    <!-- PILIHAN STATUS (CARDS) -->
                     <div class="status-options-grid">
                         <label class="status-option-card option-hadir">
                             <input type="radio" name="status-kehadiran" value="hadir">
-                            <div class="status-card-body"><i data-lucide="check-circle"></i><span>Hadir (Masuk)</span></div>
+                            <div class="status-card-body">
+                                <i data-lucide="check-circle"></i>
+                                <span>Hadir (Masuk)</span>
+                            </div>
                         </label>
+
                         <label class="status-option-card option-izin">
                             <input type="radio" name="status-kehadiran" value="izin">
-                            <div class="status-card-body"><i data-lucide="file-text"></i><span>Izin</span></div>
+                            <div class="status-card-body">
+                                <i data-lucide="file-text"></i>
+                                <span>Izin</span>
+                            </div>
                         </label>
+
                         <label class="status-option-card option-sakit">
                             <input type="radio" name="status-kehadiran" value="sakit">
-                            <div class="status-card-body"><i data-lucide="activity"></i><span>Sakit</span></div>
+                            <div class="status-card-body">
+                                <i data-lucide="activity"></i>
+                                <span>Sakit</span>
+                            </div>
                         </label>
+
                         <label class="status-option-card option-alpa">
                             <input type="radio" name="status-kehadiran" value="alpa">
-                            <div class="status-card-body"><i data-lucide="x-circle"></i><span>Alpa (Tanpa Ket.)</span></div>
+                            <div class="status-card-body">
+                                <i data-lucide="x-circle"></i>
+                                <span>Alpa (Tanpa Ket.)</span>
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -118,20 +156,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cancel" onclick="closeModalStatus()">Batal</button>
                     <button type="button" class="btn btn-save-active" onclick="applySantriStatusChange()">Pilih & Simpan</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL SUKSES CUSTOM (PENGGANTI ALERT) -->
-        <div id="modal-success-alert" class="modal-overlay">
-            <div class="modal-card modal-sm text-center">
-                <div class="success-icon-wrapper">
-                    <i data-lucide="check-circle"></i>
-                </div>
-                <h3 class="success-title">Berhasil!</h3>
-                <p id="success-message" class="success-message">Data absensi berhasil disimpan.</p>
-                <div class="modal-footer" style="justify-content: center; border-top: none; margin-top: 5px;">
-                    <button type="button" class="btn btn-save-active" onclick="closeSuccessModal()" style="width: 100%;">Oke, Mengerti</button>
                 </div>
             </div>
         </div>
