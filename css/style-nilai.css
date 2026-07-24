@@ -39,42 +39,63 @@
     border: 1px dashed var(--border-color); 
 }
 
-/* === PERBAIKAN LAYOUT SELECTOR (PERIODE & MAPEL) BIAR SEJAJAR & RATA KANAN === */
+/* === PERBAIKAN LAYOUT SELECTOR (PERIODE & MAPEL ATAS BAWAH) === */
 .selectors-container {
     display: flex;
-    flex-direction: column; /* Ditumpuk atas bawah */
+    flex-direction: column !important; /* Memaksa elemen tersusun atas-bawah */
     gap: 12px;
     width: 100%;
     margin-top: 16px;
 }
 
-.selectors-container .imtihan-selector-wrapper {
+.imtihan-selector-wrapper {
     display: flex;
     align-items: center;
-    width: 100%; /* Memaksa lebar penuh agar tepi kanannya sejajar */
+    width: 100%; 
     box-sizing: border-box;
     gap: 10px;
     margin-top: 0;
 }
 
-.selectors-container .imtihan-selector-wrapper label {
+.imtihan-selector-wrapper label {
     display: flex;
     align-items: center;
     gap: 6px;
     margin: 0;
-    min-width: 80px; /* Supaya lebar teks label "Periode" dan "Mapel" sama rata vertikal */
+    min-width: 80px; /* Supaya label Periode dan Mapel sejajar rapi */
     font-weight: 600;
+    color: var(--text-main);
 }
 
-.selectors-container .imtihan-selector-wrapper select {
-    flex: 1; /* Memaksa select mengisi penuh sisa ruang yang tersedia */
+.imtihan-selector-wrapper select {
+    flex: 1; /* Memaksa select box mengisi area kosong */
     width: 100%;
+}
+
+/* === TOMBOL TAMBAH MAPEL BIAR MENYALA DI DARK MODE === */
+.btn-add-mapel {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4); /* Efek glowing tipis */
+}
+
+.btn-add-mapel:hover {
+    background-color: #059669 !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.6);
 }
 
 /* === TOMBOL CLOSE UNTUK PANDUAN PENILAIAN === */
 .absensi-guide-box {
     position: relative;
-    padding-right: 40px; /* Beri ruang di kanan agar text tidak tertimpa tombol X */
+    padding-right: 40px; 
 }
 
 .btn-close-guide {
@@ -94,6 +115,6 @@
 }
 
 .btn-close-guide:hover {
-    background: rgba(239, 68, 68, 0.15); /* Efek merah transparan saat di-hover */
+    background: rgba(239, 68, 68, 0.15); 
     color: #ef4444;
 }
