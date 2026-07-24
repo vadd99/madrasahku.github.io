@@ -137,3 +137,72 @@
     font-size: 0.65rem;
     white-space: nowrap; /* Mencegah teks di dalam badge kecil terpotong */
 }
+/* === STYLING HEADER "REKAP NILAI" BIAR CANTIK === */
+.page-header-card {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Efek garis bercahaya di bagian atas banner */
+.page-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, transparent);
+    opacity: 0.9;
+}
+
+.header-content-flex {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Kotak ikon bernuansa hijau */
+.header-icon-wrapper {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.header-icon-wrapper i {
+    width: 24px;
+    height: 24px;
+}
+
+/* Merapikan teks judul dan subjudul */
+.header-text-wrapper .page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+}
+
+.header-text-wrapper .page-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted, #94a3b8);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Merapikan posisi tombol back kalau sedang muncul (di dalam kelas) */
+#btn-back-kelas {
+    margin-bottom: 16px;
+    display: inline-flex;
+}

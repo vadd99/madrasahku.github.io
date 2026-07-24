@@ -220,6 +220,10 @@ async function loadNilaiSubMenu(kelasId) {
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Rekap Nilai - ${selectedKelasData.namaKelas}`;
+    
+    // PERBAIKAN: Ubah subjudul agar relevan dengan konteks input nilai
+    const pageSubtitle = document.getElementById("page-subtitle");
+    if (pageSubtitle) pageSubtitle.innerText = "Pilih mapel, lalu klik nama santri untuk menginput nilai.";
 
     try {
         const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
