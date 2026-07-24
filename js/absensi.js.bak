@@ -206,10 +206,10 @@ async function loadAbsensiSubMenu(kelasId) {
             }
         });
 
-        // SET DEFAULT NULL (BELUM DIABSEN) UNTUK SANTRI YANG BELUM PUNYA STATUS HARI INI
+        // Set Default "Hadir"
         listSantri.forEach(s => {
-            if (todayAttendance[s.id] === undefined) {
-                todayAttendance[s.id] = null;
+            if (!todayAttendance[s.id]) {
+                todayAttendance[s.id] = "hadir";
             }
         });
 
@@ -223,7 +223,7 @@ async function loadAbsensiSubMenu(kelasId) {
     }
 }
 
-// LOGIKA PENDETEKSI PERUBAHAN STATUS
+// LOGIKA PENDETEKSI PERUBAHAN
 function checkUnsavedChanges() {
     const btnSave = document.getElementById("btn-save-absensi");
     if (!btnSave) return;
@@ -236,7 +236,7 @@ function checkUnsavedChanges() {
         }
     }
 
-    // Jika ada yang diganti/diisi, nyalakan tombol. Jika kembali seperti semula, matikan.
+    // Jika ada yang diganti, nyalakan tombol. Jika kembali seperti semula, matikan.
     if (hasChanges) {
         btnSave.removeAttribute("disabled");
     } else {
@@ -255,14 +255,13 @@ function renderSantriAbsensiList() {
 
     let listHtml = "";
     listSantri.forEach((santri, index) => {
-        const currentStatus = todayAttendance[santri.id];
+        const currentStatus = todayAttendance[santri.id] || "hadir";
         const rekap = rekapAttendance[santri.id] || { izin: 0, sakit: 0, alpa: 0 };
 
-        let badgeClass = "badge-status-empty";
-        let statusLabel = "BELUM ABSEN";
+        let badgeClass = "badge-status-hadir";
+        let statusLabel = "HADIR";
 
-        if (currentStatus === "hadir") { badgeClass = "badge-status-hadir"; statusLabel = "HADIR"; }
-        else if (currentStatus === "izin") { badgeClass = "badge-status-izin"; statusLabel = "IZIN"; }
+        if (currentStatus === "izin") { badgeClass = "badge-status-izin"; statusLabel = "IZIN"; }
         else if (currentStatus === "sakit") { badgeClass = "badge-status-sakit"; statusLabel = "SAKIT"; }
         else if (currentStatus === "alpa") { badgeClass = "badge-status-alpa"; statusLabel = "ALPA"; }
 
@@ -302,12 +301,9 @@ window.openModalStatus = function(santriId) {
     const elName = document.getElementById("modal-santri-nama");
     if (elName) elName.innerText = santri.nama;
 
-    const currentStatus = todayAttendance[santriId];
+    const currentStatus = todayAttendance[santriId] || "hadir";
     const radios = document.getElementsByName("status-kehadiran");
-    for (let r of radios) { 
-        // Hanya centang radio jika status sudah terisi sebelumnya
-        r.checked = (currentStatus && r.value === currentStatus); 
-    }
+    for (let r of radios) { r.checked = (r.value === currentStatus); }
 
     const modal = document.getElementById("modal-status-absensi");
     if (modal) modal.classList.add("active");
@@ -321,17 +317,15 @@ window.closeModalStatus = function() {
 window.applySantriStatusChange = function() {
     if (!selectedSantriId) return;
 
+    let chosenStatus = "hadir";
     const checkedRadio = document.querySelector('input[name="status-kehadiran"]:checked');
-    if (!checkedRadio) {
-        alert("Silakan pilih salah satu status kehadiran terlebih dahulu!");
-        return;
-    }
+    if (checkedRadio) { chosenStatus = checkedRadio.value; }
 
-    todayAttendance[selectedSantriId] = checkedRadio.value;
+    todayAttendance[selectedSantriId] = chosenStatus;
     closeModalStatus();
     renderSantriAbsensiList();
     
-    // CEK PERUBAHAN UNTUK AKTIFKAN TOMBOL SIMPAN
+    // CEK PERUBAHAN SETELAH MODAL DITUTUP
     checkUnsavedChanges();
 };
 
@@ -385,7 +379,7 @@ window.saveTodayAbsensi = async function() {
         // 2. Cek lagi (sehingga tombol simpan menjadi disabled/redup kembali)
         checkUnsavedChanges();
         
-        // 3. Tampilkan Pop-Up Sukses
+        // 3. Tampilkan Pop-Up Sukses (Custom Modal pengganti alert browser)
         showSuccessModal(`Data absensi tanggal ${getTodayFormatted()} berhasil disimpan ke database.`);
         
         await loadAbsensiSubMenu(selectedKelasId);
