@@ -1,7 +1,27 @@
 .hidden { display: none !important; }
 
-.absensi-page-container { display: flex; flex-direction: column; gap: 16px; padding-bottom: 80px; }
-.absensi-content-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; }
+/* =========================================================
+   PERBAIKAN SCROLL CONTAINER
+   ========================================================= */
+.absensi-page-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    height: 100%;
+    max-height: 100%; /* Mencegah bablas ke bawah layar */
+    overflow: hidden; /* Menyembunyikan tumpahan dari container utama */
+}
+
+.absensi-content-card { 
+    background-color: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-lg); 
+    padding: 20px; 
+    flex: 1;           /* Memaksa card mengisi sisa ruang */
+    overflow-y: auto;  /* Memunculkan scroll di dalam card */
+    min-height: 0;     /* Flexbox scroll fix */
+}
+/* ========================================================= */
 
 .btn-back { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 16px; transition: all 0.2s ease; }
 .btn-back:hover { background: #10b981; color: #ffffff; }
@@ -17,12 +37,13 @@
     border: 1px solid var(--border-color); 
     font-size: 0.85rem; 
     color: var(--text-muted); 
-    margin-top: 16px; /* <--- INI TAMBAHANNYA AGAR BERJARAK */
+    margin-top: 16px; 
 }
 
 .form-input-sm { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 0.82rem; outline: none; }
 
-.kelas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+/* Menambahkan padding-bottom agar grid kelas tidak terpotong */
+.kelas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; padding-bottom: 40px; }
 .kelas-card-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: var(--transition); }
 .kelas-card-item:hover { border-color: var(--primary-border); transform: translateY(-2px); }
 .kelas-info { display: flex; flex-direction: column; gap: 4px; }
@@ -39,7 +60,8 @@
 .guide-icon { color: #10b981; display: flex; margin-top: 2px; }
 .guide-text p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
 
-.absensi-list-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+/* Menambahkan padding-bottom besar agar nama santri terakhir tidak tertutup sticky bar */
+.absensi-list-grid { display: flex; flex-direction: column; gap: 10px; padding-bottom: 90px; }
 .absensi-santri-card { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px; cursor: pointer; transition: var(--transition); }
 .absensi-santri-card:hover { border-color: var(--primary-border); transform: translateX(3px); }
 .santri-card-left { display: flex; align-items: center; gap: 12px; }
