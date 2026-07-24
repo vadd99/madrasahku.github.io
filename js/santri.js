@@ -5,8 +5,7 @@ import {
     addDoc, 
     updateDoc, 
     deleteDoc, 
-    doc,
-    setDoc // <-- TAMBAHAN: Dibutuhkan untuk memindah/menyalin data ke kelas baru
+    doc 
 } from "./firebase-init.js";
 
 // Variable Penyimpanan Sementara dari Firebase
@@ -453,16 +452,16 @@ window.saveSantriData = async function(event) {
             // LOGIKA KETIKA EDIT: CEK APAKAH USER MEMILIH KELAS YANG BERBEDA
             if (targetKelasId !== selectedKelasId) {
                 // PINDAH KELAS TERJADI
-                // 1. Ambil data lama secara utuh (contoh: createdAt) agar tidak hilang saat dipindah
+                // 1. Ambil data lama secara utuh agar tidak hilang saat dipindah
                 const existingSantri = listSantri.find(s => s.id === selectedSantriId);
                 const fullSantriData = { ...existingSantri, ...santriData };
-                delete fullSantriData.id; // Hapus properti "id" agar tidak masuk sebagai field database
+                delete fullSantriData.id; // Hapus id agar tidak terinput sebagai field
 
-                // 2. Buat dokumen baru di sub-koleksi kelas yang baru (dengan ID yang sama)
-                const newSantriDocRef = doc(db, "kelas", targetKelasId, "santri", selectedSantriId);
-                await setDoc(newSantriDocRef, fullSantriData);
+                // 2. Buat santri baru di kelas tujuan menggunakan addDoc (tanpa butuh import setDoc)
+                const targetSantriRef = collection(db, "kelas", targetKelasId, "santri");
+                await addDoc(targetSantriRef, fullSantriData);
 
-                // 3. Hapus dokumen lama dari sub-koleksi kelas asal
+                // 3. Hapus dokumen lama dari kelas asal
                 const oldSantriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
                 await deleteDoc(oldSantriDocRef);
 
@@ -474,7 +473,6 @@ window.saveSantriData = async function(event) {
         } else {
             // LOGIKA TAMBAH DATA BARU
             santriData.createdAt = new Date();
-            // Masukkan santri ke kelas target sesuai dropdown (targetKelasId)
             const santriRef = collection(db, "kelas", targetKelasId, "santri");
             await addDoc(santriRef, santriData);
         }
