@@ -2,11 +2,10 @@ import {
     db, 
     collection, 
     getDocs, 
-    getDoc,
-    setDoc, 
-    doc,
-    query,
-    where 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc 
 } from "./firebase-init.js";
 
 let listKelas = [];
@@ -15,13 +14,15 @@ let selectedKelasId = null;
 let selectedSantriId = null;
 
 let activeImtihan = "Imtihan 1";
-let todayAttendance = {}; // Menyimpan sementara status absensi hari ini
-let rekapAttendance = {}; // Menyimpan akumulasi rekap imtihan
+let todayAttendance = {}; 
+let rekapAttendance = {}; 
+
+// Variabel untuk melacak apakah hari ini sudah ada data absensi di database
+let todayAbsensiDocId = null; 
 
 // --- PENANGANAN INISIALISASI AMAN ---
 function initAbsensiView() {
     if (document.getElementById("view-absensi")) {
-        // Sinkronisasi nilai default dropdown Imtihan dengan variabel saat halaman dimuat
         const selectEl = document.getElementById("select-imtihan");
         if (selectEl) {
             activeImtihan = selectEl.value;
@@ -177,7 +178,7 @@ async function loadAbsensiSubMenu(kelasId) {
     if (viewAbsensi) viewAbsensi.classList.remove("hidden");
 
     try {
-        // A. Ambil Daftar Santri di Kelas Ini (Sesuai dengan database santri yang dibuat sebelumnya)
+        // A. Ambil Daftar Santri di Kelas Ini
         const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
         listSantri = [];
         santriSnap.forEach((docSnap) => {
@@ -195,45 +196,48 @@ async function loadAbsensiSubMenu(kelasId) {
             rekapAttendance[s.id] = { izin: 0, sakit: 0, alpa: 0 };
         });
 
-        // PERBAIKAN: Hanya melakukan query 1 parameter agar terhindar dari Error Composite Index Firebase
-        const absensiQuery = query(collection(db, "absensi"), where("kelasId", "==", kelasId));
-        const absensiSnap = await getDocs(absensiQuery);
+        // C. Ambil semua absensi dari Database menggunakan fungsi standar getDocs
+        const absensiSnap = await getDocs(collection(db, "absensi"));
+        
+        const todayISO = getTodayISO();
+        todayAttendance = {};
+        todayAbsensiDocId = null; // Reset ID dokumen setiap memuat kelas
 
         absensiSnap.forEach(docSnap => {
             const data = docSnap.data();
-            // Filter manual berdasarkan Imtihan Aktif
-            if (data.imtihan === activeImtihan) {
-                const kehadiranData = data.kehadiran || {};
-                Object.keys(kehadiranData).forEach(sId => {
-                    if (rekapAttendance[sId]) {
-                        const st = kehadiranData[sId];
-                        if (st === "izin") rekapAttendance[sId].izin++;
-                        else if (st === "sakit") rekapAttendance[sId].sakit++;
-                        else if (st === "alpa") rekapAttendance[sId].alpa++;
-                    }
-                });
+            
+            // Cek apakah data ini untuk kelas yang sedang dibuka
+            if (data.kelasId === kelasId) {
+                
+                // 1. Tambahkan ke perhitungan Rekap jika Imtihan sesuai pilihan
+                if (data.imtihan === activeImtihan) {
+                    const kehadiranData = data.kehadiran || {};
+                    Object.keys(kehadiranData).forEach(sId => {
+                        if (rekapAttendance[sId]) {
+                            const st = kehadiranData[sId];
+                            if (st === "izin") rekapAttendance[sId].izin++;
+                            else if (st === "sakit") rekapAttendance[sId].sakit++;
+                            else if (st === "alpa") rekapAttendance[sId].alpa++;
+                        }
+                    });
+                }
+
+                // 2. Cek apakah dokumen ini adalah absensi HARI INI
+                if (data.tanggal === todayISO) {
+                    todayAbsensiDocId = docSnap.id; // Menyimpan ID dokumen agar bisa di-Update nanti
+                    todayAttendance = data.kehadiran || {};
+                }
             }
         });
 
-        // C. Ambil / Set Data Absensi Hari Ini
-        const todayISO = getTodayISO();
-        const todayDocRef = doc(db, "absensi", `${kelasId}_${todayISO}`);
-        const todayDocSnap = await getDoc(todayDocRef);
-
-        todayAttendance = {};
-        if (todayDocSnap.exists()) {
-            // Jika hari ini sudah diabsen, ambil datanya
-            todayAttendance = todayDocSnap.data().kehadiran || {};
-        }
-
-        // Isi default status 'hadir' untuk santri yang belum di-set
+        // D. Isi default status 'hadir' untuk santri yang belum diabsen sama sekali hari ini
         listSantri.forEach(s => {
             if (!todayAttendance[s.id]) {
                 todayAttendance[s.id] = "hadir";
             }
         });
 
-        // D. Render UI
+        // E. Render List Santri
         renderSantriAbsensiList();
 
     } catch (error) {
@@ -338,19 +342,14 @@ window.applySantriStatusChange = function() {
 };
 
 /* ===================================================
-   4. SIMPAN ABSENSI HARI INI KE FIREBASE
+   4. SIMPAN ABSENSI HARI INI KE FIREBASE (TANPA setDoc)
    =================================================== */
 window.saveTodayAbsensi = async function() {
     if (!selectedKelasId) return;
 
-    const todayISO = getTodayISO();
-    
-    // Gunakan format "IDKelas_Tanggal" sebagai nama Dokumen agar unik per harinya
-    const docId = `${selectedKelasId}_${todayISO}`;
-
     const payload = {
         kelasId: selectedKelasId,
-        tanggal: todayISO,
+        tanggal: getTodayISO(),
         imtihan: activeImtihan,
         kehadiran: todayAttendance,
         updatedAt: new Date()
@@ -359,12 +358,22 @@ window.saveTodayAbsensi = async function() {
     try {
         const btnSave = document.querySelector('.btn-save-absensi');
         const originalText = btnSave.innerHTML;
+        
+        // Ubah teks tombol jadi loading
         btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i><span>Menyimpan...</span>`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // setDoc akan membuat dokumen baru jika belum ada, atau update (menimpa) jika sudah ada
-        await setDoc(doc(db, "absensi", docId), payload);
+        // LOGIKA PENYIMPANAN AMAN (Menggantikan setDoc)
+        if (todayAbsensiDocId) {
+            // Jika dokumen absensi untuk hari ini sudah ada, kita Update isinya
+            const absensiDocRef = doc(db, "absensi", todayAbsensiDocId);
+            await updateDoc(absensiDocRef, payload);
+        } else {
+            // Jika belum ada absensi untuk hari ini, kita Tambahkan dokumen baru
+            await addDoc(collection(db, "absensi"), payload);
+        }
         
+        // Kembalikan tombol seperti semula
         btnSave.innerHTML = originalText;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
