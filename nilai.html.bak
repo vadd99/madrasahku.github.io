@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="css/style-components.css">
     <link rel="stylesheet" href="css/style-absensi.css">
     <link rel="stylesheet" href="css/style-rekap.css">
-    <!-- Pastikan file nilai.css dipanggil jika ada beda penamaan file -->
     <link rel="stylesheet" href="css/style-nilai.css"> 
 
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,14 +20,14 @@
         <div class="absensi-page-container">
             <div class="page-toolbar">
                 
-                <!-- PERBAIKAN: Header dijadikan bentuk Card berikon -->
+                <!-- PERBAIKAN: Header Card dengan tombol back minimalis di dalam flex -->
                 <div class="toolbar-info page-header-card">
-                    <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
-                        <i data-lucide="arrow-left"></i>
-                        <span>Kembali ke Daftar Kelas</span>
-                    </button>
-                    
                     <div class="header-content-flex">
+                        
+                        <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()" title="Kembali ke Daftar Kelas">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        
                         <div class="header-icon-wrapper">
                             <i data-lucide="graduation-cap"></i>
                         </div>
@@ -39,7 +38,7 @@
                     </div>
                 </div>
 
-                <!-- PERBAIKAN: Bersih dari inline style, diatur full lewat class CSS -->
+                <!-- PERBAIKAN: Selector dibuat lebih padat ukurannya -->
                 <div id="nilai-selectors" class="selectors-container hidden">
                     <div class="imtihan-selector-wrapper">
                         <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>

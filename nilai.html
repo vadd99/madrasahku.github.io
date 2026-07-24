@@ -20,7 +20,7 @@
         <div class="absensi-page-container">
             <div class="page-toolbar">
                 
-                <!-- PERBAIKAN: Header Card dengan tombol back minimalis di dalam flex -->
+                <!-- Header Card dengan tombol back minimalis di dalam flex -->
                 <div class="toolbar-info page-header-card">
                     <div class="header-content-flex">
                         
@@ -38,7 +38,7 @@
                     </div>
                 </div>
 
-                <!-- PERBAIKAN: Selector dibuat lebih padat ukurannya -->
+                <!-- Selector dibuat lebih padat ukurannya -->
                 <div id="nilai-selectors" class="selectors-container hidden">
                     <div class="imtihan-selector-wrapper">
                         <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
@@ -74,7 +74,7 @@
                         <div class="guide-icon"><i data-lucide="info"></i></div>
                         <div class="guide-text">
                             <strong>Panduan Penilaian:</strong>
-                            <p>Pastikan Mapel sudah dipilih. Klik nama santri untuk menambahkan nilai Ulangan Harian (UH). Setelah semua nilai diinput, klik tombol <b>Simpan Data Nilai</b> di bawah.</p>
+                            <p>Pastikan Mapel sudah dipilih. Klik nama santri untuk menambahkan nilai Ulangan Harian (UH). Setelah semua nilai diinput, klik tombol <b>Simpan ke Database</b> di bawah.</p>
                         </div>
                         <button class="btn-close-guide" onclick="closeGuideBox()" title="Tutup Panduan">
                             <i data-lucide="x" style="width: 18px; height: 18px;"></i>
@@ -83,14 +83,11 @@
 
                     <div id="santri-absensi-container" class="absensi-list-grid"></div>
 
+                    <!-- PERBAIKAN: Teks dihilangkan, tombol dibuat full width -->
                     <div class="absensi-bottom-bar">
-                        <div class="today-date-info">
-                            <i data-lucide="database"></i>
-                            <span>Sinkronisasi ke Database Firebase</span>
-                        </div>
-                        <button id="btn-save-absensi" class="btn-primary btn-save-absensi" onclick="saveAllNilai()" disabled>
+                        <button id="btn-save-absensi" class="btn-primary btn-save-absensi" onclick="saveAllNilai()" disabled style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="save"></i>
-                            <span>Simpan Data Nilai</span>
+                            <span>Simpan ke Database</span>
                         </button>
                     </div>
                 </div>
