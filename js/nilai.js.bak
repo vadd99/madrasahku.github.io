@@ -123,6 +123,10 @@ async function loadKelasFromFirebase() {
     const btnBack = document.getElementById("btn-back-kelas");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
+    
+    // Sembunyikan bagian dropdown Imtihan & Mapel
+    const selectorsContainer = document.getElementById("nilai-selectors");
+    if (selectorsContainer) selectorsContainer.classList.add("hidden");
 
     if (!viewAbsensi || !gridContainer) return;
 
@@ -190,6 +194,10 @@ async function loadNilaiSubMenu(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewAbsensi = document.getElementById("view-absensi");
     const btnBack = document.getElementById("btn-back-kelas");
+
+    // Munculkan bagian dropdown Imtihan & Mapel
+    const selectorsContainer = document.getElementById("nilai-selectors");
+    if (selectorsContainer) selectorsContainer.classList.remove("hidden");
 
     if (!viewAbsensi) return;
 
