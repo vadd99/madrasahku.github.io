@@ -540,25 +540,3 @@
 .hidden {
     display: none !important;
 }
-/* Perbaikan agar halaman santri bisa di-scroll ke bawah */
-body, html {
-    height: auto !important;
-    overflow-y: auto !important;
-}
-
-#layout-wrapper, 
-.santri-page-container, 
-.santri-content-card {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-}
-
-/* Memastikan area list santri dan grid kelas leluasa dan tidak terpotong */
-#santri-list-container,
-#kelas-grid-container {
-    max-height: none !important;
-    overflow-y: visible !important;
-    padding-bottom: 40px; /* Memberikan ruang ekstra di bagian paling bawah */
-}
-
