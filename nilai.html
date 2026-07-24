@@ -27,8 +27,8 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
                 </div>
 
-                <!-- PERBAIKAN PADA BAGIAN SELECTORS -->
-                <div class="selectors-container" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
+                <!-- PERBAIKAN: Tambah ID dan hidden secara default -->
+                <div id="nilai-selectors" class="selectors-container hidden" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
                     <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
                         <label for="select-imtihan" style="margin: 0;"><i data-lucide="award"></i> Periode:</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
@@ -42,7 +42,6 @@
                         <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)" style="min-width: 140px;">
                             <option value="">-- Pilih Mapel --</option>
                         </select>
-                        <!-- Penambahan type="button", white-space: nowrap, dan kursor -->
                         <button type="button" class="btn-primary" style="padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; white-space: nowrap; cursor: pointer;" onclick="openModalTambahMapel()">+ Mapel</button>
                     </div>
                 </div>

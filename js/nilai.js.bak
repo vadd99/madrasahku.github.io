@@ -15,8 +15,15 @@ let todayNilaiDocId = null;
 let activeUhData = {};
 const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
+// --- METODE INISIALISASI YANG ANTI GAGAL ---
+let isInitialized = false;
+
 function initRekapView() {
-    if (document.getElementById("view-absensi")) {
+    if (isInitialized) return;
+    
+    const viewAbsensi = document.getElementById("view-absensi");
+    if (viewAbsensi) {
+        isInitialized = true;
         const selectImtihan = document.getElementById("select-imtihan");
         if (selectImtihan) activeImtihan = selectImtihan.value;
         loadMapelFromFirebase();
@@ -24,13 +31,23 @@ function initRekapView() {
     }
 }
 
+// 1. Coba inisialisasi saat event standar berjalan
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initRekapView);
 } else {
     initRekapView();
 }
-
 document.addEventListener("layoutReady", initRekapView);
+
+// 2. Fallback: Pantau DOM jika script utama me-render template terlambat
+const observer = new MutationObserver(() => {
+    if (document.getElementById("view-absensi") && !isInitialized) {
+        initRekapView();
+        observer.disconnect(); // Hentikan pantauan jika sudah sukses
+    }
+});
+observer.observe(document.documentElement, { childList: true, subtree: true });
+
 
 window.changeImtihanPeriod = function(val) {
     activeImtihan = val;
