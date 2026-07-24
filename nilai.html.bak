@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Nilai Santri - AL-HADI</title>
+    <link rel="stylesheet" href="css/style-base.css">
+    <link rel="stylesheet" href="css/style-layout.css">
+    <link rel="stylesheet" href="css/style-components.css">
+    <link rel="stylesheet" href="css/style-nilai.css">      
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark">
+
+    <div id="layout-wrapper"></div>
+
+    <template id="page-content">
+        <div class="empty-placeholder">
+            <div class="empty-icon-box">
+                <i data-lucide="file-spreadsheet"></i>
+            </div>
+            <h3 class="empty-title">Halaman Rekap Nilai Santri</h3>
+            <p class="empty-desc">Halaman ini belum dikonfigurasi dan akan disiapkan pada tahap pengembangan berikutnya.</p>
+        </div>
+    </template>
+
+    <script src="main.js"></script>
+</body>
+</html>
