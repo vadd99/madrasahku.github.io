@@ -27,20 +27,23 @@
                     <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola nilai harian santri.</p>
                 </div>
 
-                <div class="selectors-container" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;">
-                    <div class="imtihan-selector-wrapper" style="margin-top: 0;">
-                        <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
+                <!-- PERBAIKAN PADA BAGIAN SELECTORS -->
+                <div class="selectors-container" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 16px; align-items: center;">
+                    <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
+                        <label for="select-imtihan" style="margin: 0;"><i data-lucide="award"></i> Periode:</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
                             <option value="Imtihan 1">Imtihan 1 (Semester Ganjil)</option>
                             <option value="Imtihan 2">Imtihan 2 (Semester Genap)</option>
                         </select>
                     </div>
-                    <div class="imtihan-selector-wrapper" style="margin-top: 0;">
-                        <label for="select-mapel"><i data-lucide="book"></i> Mapel:</label>
+                    
+                    <div class="imtihan-selector-wrapper" style="display: flex; align-items: center; gap: 8px; margin-top: 0;">
+                        <label for="select-mapel" style="margin: 0;"><i data-lucide="book"></i> Mapel:</label>
                         <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)" style="min-width: 140px;">
                             <option value="">-- Pilih Mapel --</option>
                         </select>
-                        <button class="btn-primary" style="padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; height: 100%;" onclick="openModalTambahMapel()">+ Mapel</button>
+                        <!-- Penambahan type="button", white-space: nowrap, dan kursor -->
+                        <button type="button" class="btn-primary" style="padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; white-space: nowrap; cursor: pointer;" onclick="openModalTambahMapel()">+ Mapel</button>
                     </div>
                 </div>
             </div>
