@@ -67,6 +67,14 @@ window.changeImtihanPeriod = function(val) {
 };
 
 window.changeMapel = function(val) {
+    // PERBAIKAN: Jika yang dipilih adalah opsi "Tambah Mapel Baru"
+    if (val === "ADD_NEW_MAPEL") {
+        openModalTambahMapel();
+        // Kembalikan kotak pilihan ke mapel sebelumnya agar opsi "Tambah" tidak menempel
+        document.getElementById("select-mapel").value = activeMapel || "";
+        return;
+    }
+    
     activeMapel = val;
     if (selectedKelasId) loadNilaiSubMenu(selectedKelasId);
 };
@@ -93,8 +101,12 @@ async function loadMapelFromFirebase() {
             listMapel.forEach(m => {
                 options += `<option value="${m.nama}">${m.nama}</option>`;
             });
+            
+            // PERBAIKAN: Menambahkan opsi Tambah Mapel di dalam dropdown
+            options += `<option value="ADD_NEW_MAPEL" style="font-weight:bold; color:#10b981;">+ Tambah Mapel Baru...</option>`;
+            
             selectMapel.innerHTML = options;
-            if(activeMapel) selectMapel.value = activeMapel;
+            if(activeMapel && activeMapel !== "ADD_NEW_MAPEL") selectMapel.value = activeMapel;
         }
     } catch(e) { console.error("Gagal meload daftar mapel", e); }
 }
@@ -221,7 +233,7 @@ async function loadNilaiSubMenu(kelasId) {
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Rekap Nilai - ${selectedKelasData.namaKelas}`;
     
-    // PERBAIKAN: Ubah subjudul agar relevan dengan konteks input nilai
+    // PERBAIKAN: Ubah subjudul saat di dalam kelas
     const pageSubtitle = document.getElementById("page-subtitle");
     if (pageSubtitle) pageSubtitle.innerText = "Pilih mapel, lalu klik nama santri untuk menginput nilai.";
 

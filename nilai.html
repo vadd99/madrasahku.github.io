@@ -38,22 +38,22 @@
                     </div>
                 </div>
 
-                <!-- Selector dibuat lebih padat ukurannya -->
+                <!-- Selector dibuat 1 baris, dibagi 2 kolom -->
                 <div id="nilai-selectors" class="selectors-container hidden">
                     <div class="imtihan-selector-wrapper">
-                        <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
+                        <label for="select-imtihan"><i data-lucide="award" style="width: 14px; height: 14px;"></i> Periode</label>
                         <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
-                            <option value="Imtihan 1">Imtihan 1 (Semester Ganjil)</option>
-                            <option value="Imtihan 2">Imtihan 2 (Semester Genap)</option>
+                            <option value="Imtihan 1">Imtihan 1 (Ganjil)</option>
+                            <option value="Imtihan 2">Imtihan 2 (Genap)</option>
                         </select>
                     </div>
                     
                     <div class="imtihan-selector-wrapper">
-                        <label for="select-mapel"><i data-lucide="book"></i> Mapel:</label>
+                        <label for="select-mapel"><i data-lucide="book" style="width: 14px; height: 14px;"></i> Mapel</label>
                         <select id="select-mapel" class="form-input-sm" onchange="changeMapel(this.value)">
                             <option value="">-- Pilih Mapel --</option>
+                            <!-- Opsi akan diisi dari JS, termasuk tombol Tambah Mapel -->
                         </select>
-                        <button type="button" class="btn-add-mapel" onclick="openModalTambahMapel()">+ Mapel</button>
                     </div>
                 </div>
             </div>
@@ -83,7 +83,7 @@
 
                     <div id="santri-absensi-container" class="absensi-list-grid"></div>
 
-                    <!-- PERBAIKAN: Teks dihilangkan, tombol dibuat full width -->
+                    <!-- Tombol Simpan Full Width -->
                     <div class="absensi-bottom-bar">
                         <button id="btn-save-absensi" class="btn-primary btn-save-absensi" onclick="saveAllNilai()" disabled style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="save"></i>

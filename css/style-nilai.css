@@ -39,11 +39,11 @@
     border: 1px dashed var(--border-color); 
 }
 
-/* === PERBAIKAN LAYOUT SELECTOR (PERIODE & MAPEL ATAS BAWAH) === */
+/* === PERBAIKAN LAYOUT SELECTOR (1 BARIS BAGI 2) === */
 .selectors-container {
-    display: flex;
-    flex-direction: column !important; 
-    gap: 8px !important; /* Diperkecil agar lebih padat */
+    display: grid !important;
+    grid-template-columns: 1fr 1fr; /* Membagi lurus 50% - 50% */
+    gap: 12px !important;
     width: 100%;
     margin-top: 0 !important; 
     margin-bottom: 16px; /* Jarak ke list santri */
@@ -51,47 +51,28 @@
 
 .imtihan-selector-wrapper {
     display: flex;
-    align-items: center;
+    flex-direction: column; /* Label dipindah ke atas kotak input */
+    align-items: flex-start;
     width: 100%; 
     box-sizing: border-box;
-    gap: 10px;
+    gap: 6px;
     margin-top: 0;
 }
 
 .imtihan-selector-wrapper label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     margin: 0;
-    min-width: 80px; 
+    font-size: 0.75rem; /* Dikecilkan sedikit agar rapi */
     font-weight: 600;
-    color: var(--text-main);
+    color: var(--text-muted); 
 }
 
 .imtihan-selector-wrapper select {
-    flex: 1; 
     width: 100%;
-    padding: 6px 10px; /* Ukuran input diperkecil tingginya */
-}
-
-/* === TOMBOL TAMBAH MAPEL BIAR MENYALA DI DARK MODE === */
-.btn-add-mapel {
-    background-color: #10b981 !important;
-    color: #ffffff !important;
-    border: none;
-    padding: 6px 12px !important; /* Ukuran diseimbangkan dengan select */
-    border-radius: 6px;
+    padding: 8px 10px; /* Ukuran input dibuat ideal untuk ditekan */
     font-size: 0.85rem;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4); 
-}
-
-.btn-add-mapel:hover {
-    background-color: #059669 !important;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.6);
 }
 
 /* === TOMBOL CLOSE UNTUK PANDUAN PENILAIAN === */
