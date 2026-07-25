@@ -33,7 +33,6 @@ export {
     db, 
     collection, 
     getDocs, 
-    setDocs,
     addDoc, 
     updateDoc, 
     deleteDoc, 
