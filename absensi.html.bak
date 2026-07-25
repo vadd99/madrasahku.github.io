@@ -62,12 +62,17 @@
                 </div>
 
                 <div id="view-absensi" class="hidden">
-                    <div class="absensi-guide-box">
+                    <!-- PANDUAN ABSENSI (DENGAN TOMBOL CLOSE) -->
+                    <div id="guide-box-absensi" class="absensi-guide-box">
                         <div class="guide-icon"><i data-lucide="info"></i></div>
                         <div class="guide-text">
                             <strong>Panduan Absensi:</strong>
                             <p>Klik pada nama santri untuk mengubah status (Hadir, Izin, Sakit, Alpa). Secara default semua santri di-set <b>Hadir</b>. Jangan lupa klik tombol <b>Simpan Absensi Hari Ini</b> di bawah setelah selesai.</p>
                         </div>
+                        <button class="btn-close-guide" onclick="closeGuideBox()" title="Tutup Panduan">
+                            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                        </button>
+                    </div>
                     </div>
 
                     <div id="santri-absensi-container" class="absensi-list-grid"></div>
