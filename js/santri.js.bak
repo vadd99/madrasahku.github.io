@@ -9,8 +9,8 @@ import {
 } from "./firebase-init.js";
 
 // Variable Penyimpanan Sementara dari Firebase
-let listKelas = [];       
-let listSantri = [];      
+let listKelas = [];       // Menyimpan daftar dokumen kelas
+let listSantri = [];      // Menyimpan daftar santri pada kelas yang dipilih
 
 let selectedKelasId = null;
 let selectedKelasData = null;
@@ -20,7 +20,7 @@ document.addEventListener("layoutReady", function () {
     renderMainView();
 });
 
-// Render Tampilan Utama
+// Render Tampilan Utama (Cek Tampilan Kelas atau Sub-Menu Santri)
 async function renderMainView() {
     if (selectedKelasId === null) {
         await loadKelasFromFirebase();
@@ -33,6 +33,7 @@ async function renderMainView() {
    1. LOGIKA KELAS (FIREBASE)
    =================================================== */
 
+// Load Data Kelas dari Collection "kelas" di Firestore & Hitung Santri Realtime
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
@@ -46,19 +47,20 @@ async function loadKelasFromFirebase() {
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
     // Atur Toolbar
-    if (btnBack) btnBack.classList.add("hidden");
-    if (pageTitle) pageTitle.innerText = "Data Santri Per Kelas";
-    if (pageSubtitle) pageSubtitle.innerText = "Pilih kelas untuk melihat atau mengelola data santri.";
-    if (btnTambahKelas) btnTambahKelas.classList.remove("hidden");
-    if (btnTambahSantri) btnTambahSantri.classList.add("hidden");
+    btnBack.classList.add("hidden");
+    pageTitle.innerText = "Data Santri Per Kelas";
+    pageSubtitle.innerText = "Pilih kelas untuk melihat atau mengelola data santri.";
+    btnTambahKelas.classList.remove("hidden");
+    btnTambahSantri.classList.add("hidden");
 
-    if (viewKelas) viewKelas.classList.remove("hidden");
-    if (viewSantri) viewSantri.classList.add("hidden");
+    viewKelas.classList.remove("hidden");
+    viewSantri.classList.add("hidden");
 
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
         listKelas = [];
         
+        // Mengambil seluruh data kelas & jumlah santri tiap kelas secara paralel
         const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const santriSnap = await getDocs(collection(db, "kelas", docSnap.id, "santri"));
@@ -73,6 +75,7 @@ async function loadKelasFromFirebase() {
 
         listKelas = await Promise.all(kelasPromises);
 
+        // Sorting Angka Alami (Natural Numerical Sort: Kelas 1, Kelas 2, Kelas 10, dst)
         listKelas.sort((a, b) => {
             return a.namaKelas.localeCompare(b.namaKelas, undefined, { 
                 numeric: true, 
@@ -93,23 +96,11 @@ async function loadKelasFromFirebase() {
         listKelas.forEach((kelas) => {
             cardsHtml += `
                 <div class="kelas-card-item" onclick="openSantriSubMenu('${kelas.id}')">
-                    <div class="kelas-icon-wrapper">
-                        <i data-lucide="book-open"></i>
-                    </div>
                     <div class="kelas-info">
                         <div class="kelas-name">${kelas.namaKelas}</div>
-                        <div class="kelas-meta">
-                            <span class="meta-badge meta-wali">
-                                <i data-lucide="user"></i> Wali: ${kelas.waliKelas}
-                            </span>
-                            <span class="meta-badge meta-santri">
-                                <i data-lucide="users"></i> ${kelas.totalSantri} Santri
-                            </span>
-                        </div>
+                        <div class="kelas-count">${kelas.totalSantri} santri</div>
                     </div>
-                    <div class="kelas-action">
-                        <i data-lucide="chevron-right"></i>
-                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
             `;
         });
@@ -122,16 +113,19 @@ async function loadKelasFromFirebase() {
     }
 }
 
+// Memuat daftar guru dari Firebase untuk Dropdown Wali Kelas
 async function populateGuruDropdown(selectedGuruValue = "") {
     const waliSelect = document.getElementById("wali-kelas-input");
     if (!waliSelect) return;
 
+    // Set loading state sementara data diambil
     waliSelect.innerHTML = `<option value="" disabled selected>-- Memuat daftar guru... --</option>`;
 
     try {
         const guruSnap = await getDocs(collection(db, "guru"));
         let listGuru = [];
 
+        // Ambil nama dari setiap dokumen guru
         guruSnap.forEach((docSnap) => {
             const data = docSnap.data();
             if (data.nama) {
@@ -139,6 +133,7 @@ async function populateGuruDropdown(selectedGuruValue = "") {
             }
         });
 
+        // Urutkan nama guru sesuai abjad
         listGuru.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
         let optionsHtml = `<option value="" ${!selectedGuruValue ? 'selected' : ''}>-- Pilih Wali Kelas --</option>`;
@@ -160,11 +155,13 @@ async function populateGuruDropdown(selectedGuruValue = "") {
     }
 }
 
+// Open Modal Tambah / Edit Kelas
 window.openModalKelas = async function(isEdit = false) {
     const modal = document.getElementById("modal-kelas");
     const title = document.getElementById("modal-kelas-title");
     const inputNama = document.getElementById("nama-kelas-input");
     
+    // Variabel untuk menyimpan wali kelas saat mode edit
     let currentWali = "";
 
     if (isEdit && selectedKelasData) {
@@ -177,6 +174,8 @@ window.openModalKelas = async function(isEdit = false) {
     }
 
     if (modal) modal.classList.add("active");
+
+    // Jalankan fungsi populate dropdown guru setiap kali modal terbuka
     await populateGuruDropdown(currentWali);
 };
 
@@ -185,6 +184,7 @@ window.closeModalKelas = function() {
     if (modal) modal.classList.remove("active");
 };
 
+// Simpan atau Edit Kelas ke Firebase
 window.saveKelasData = async function(event) {
     event.preventDefault();
     const inputNama = document.getElementById("nama-kelas-input");
@@ -196,12 +196,14 @@ window.saveKelasData = async function(event) {
 
     try {
         if (selectedKelasId && document.getElementById("modal-kelas-title").innerText.includes("Edit")) {
+            // Update Data Kelas
             const docRef = doc(db, "kelas", selectedKelasId);
             await updateDoc(docRef, {
                 namaKelas: namaKelas,
                 waliKelas: waliKelas || "-"
             });
         } else {
+            // Tambah Kelas Baru
             await addDoc(collection(db, "kelas"), {
                 namaKelas: namaKelas,
                 waliKelas: waliKelas || "-",
@@ -217,6 +219,7 @@ window.saveKelasData = async function(event) {
     }
 };
 
+// Hapus Kelas beserta Akses Sub-menu
 window.deleteKelasData = async function() {
     if (!selectedKelasId) return;
 
@@ -248,6 +251,7 @@ window.goBackToKelasList = function() {
     renderMainView();
 };
 
+// Load Data Santri dari Sub-Collection "kelas/{kelasId}/santri"
 async function loadSantriFromFirebase(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
@@ -260,18 +264,20 @@ async function loadSantriFromFirebase(kelasId) {
     const btnTambahKelas = document.getElementById("btn-tambah-kelas");
     const btnTambahSantri = document.getElementById("btn-tambah-santri");
 
+    // Ambil Data Kelas Spesifik
     selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas", waliKelas: "-" };
 
-    if (btnBack) btnBack.classList.remove("hidden");
-    if (pageTitle) pageTitle.innerText = `Data Santri - ${selectedKelasData.namaKelas}`;
-    if (pageSubtitle) pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di kelas ini.`;
-    if (btnTambahKelas) btnTambahKelas.classList.add("hidden");
-    if (btnTambahSantri) btnTambahSantri.classList.remove("hidden");
+    // Atur Toolbar
+    btnBack.classList.remove("hidden");
+    pageTitle.innerText = `Data Santri - ${selectedKelasData.namaKelas}`;
+    pageSubtitle.innerText = `Daftar nama-nama santri yang terdaftar di ${selectedKelasData.namaKelas}.`;
+    btnTambahKelas.classList.add("hidden");
+    btnTambahSantri.classList.remove("hidden");
 
     document.getElementById("sub-kelas-title").innerText = selectedKelasData.namaKelas;
 
-    if (viewKelas) viewKelas.classList.add("hidden");
-    if (viewSantri) viewSantri.classList.remove("hidden");
+    viewKelas.classList.add("hidden");
+    viewSantri.classList.remove("hidden");
 
     try {
         const santriRef = collection(db, "kelas", kelasId, "santri");
@@ -285,7 +291,7 @@ async function loadSantriFromFirebase(kelasId) {
             });
         });
 
-        // HITUNG STATISTIK KELAS
+        // HITUNG STATISTIK KELAS (Laki-laki & Perempuan)
         const totalSantri = listSantri.length;
         let countLaki = 0;
         let countPerempuan = 0;
@@ -299,6 +305,7 @@ async function loadSantriFromFirebase(kelasId) {
             }
         });
 
+        // Set Nilai ke Widget Compact Stat Strip
         document.getElementById("stat-wali-kelas").innerText = selectedKelasData.waliKelas || "-";
         document.getElementById("stat-total-santri").innerText = `${totalSantri} Santri`;
         document.getElementById("stat-count-l").innerText = countLaki;
@@ -316,20 +323,17 @@ async function loadSantriFromFirebase(kelasId) {
         let listHtml = "";
         listSantri.forEach((santri, index) => {
             listHtml += `
-                <div class="santri-card-item" onclick="openDetailSantriModal('${santri.id}')">
-                    <div class="santri-card-left">
+                <div class="santri-item" onclick="openDetailSantriModal('${santri.id}')">
+                    <div class="santri-item-left">
                         <div class="number-badge">${index + 1}</div>
-                        <div class="santri-info">
-                            <div class="santri-name">${santri.nama}</div>
-                            <div class="santri-rekap-counters">
-                                <span class="rekap-pill">${santri.jenisKelamin || 'SANTRI'}</span>
-                                <span class="rekap-pill">NIS: ${santri.nis || '-'}</span>
+                        <div>
+                            <div class="santri-item-name">${santri.nama}</div>
+                            <div class="santri-item-sub">
+                                ${santri.jenisKelamin || 'SANTRI'} • ${santri.nis ? 'NIS: ' + santri.nis : 'NIS: -'}
                             </div>
                         </div>
                     </div>
-                    <div class="santri-card-right">
-                        <i data-lucide="chevron-right" class="chevron-icon"></i>
-                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
             `;
         });
@@ -400,10 +404,12 @@ window.openFormSantriModal = function(isEdit = false, santriId = null) {
         document.getElementById("form-santri").reset();
     }
     
+    // MENAMPILKAN SELURUH KELAS DI DROPDOWN AGAR BISA PINDAH KELAS
     const kelasSelect = document.getElementById("santri-kelas");
     if (kelasSelect) {
         let optionsHtml = "";
         listKelas.forEach(kelas => {
+            // Default select ke kelas yang sedang aktif saat ini
             const isSelected = (kelas.id === selectedKelasId) ? "selected" : "";
             optionsHtml += `<option value="${kelas.id}" ${isSelected}>${kelas.namaKelas}</option>`;
         });
@@ -420,12 +426,14 @@ window.closeFormSantriModal = function() {
     if (form) form.reset();
 };
 
+// Simpan, Update, atau Pindahkan Santri ke Firebase
 window.saveSantriData = async function(event) {
     event.preventDefault();
 
     const nama = document.getElementById("santri-nama").value.trim();
     if (!nama) return;
 
+    // Ambil Kelas Tujuan dari Input Select
     const targetKelasId = document.getElementById("santri-kelas").value;
 
     const santriData = {
@@ -441,21 +449,29 @@ window.saveSantriData = async function(event) {
 
     try {
         if (selectedSantriId) {
+            // LOGIKA KETIKA EDIT: CEK APAKAH USER MEMILIH KELAS YANG BERBEDA
             if (targetKelasId !== selectedKelasId) {
+                // PINDAH KELAS TERJADI
+                // 1. Ambil data lama secara utuh agar tidak hilang saat dipindah
                 const existingSantri = listSantri.find(s => s.id === selectedSantriId);
                 const fullSantriData = { ...existingSantri, ...santriData };
-                delete fullSantriData.id; 
+                delete fullSantriData.id; // Hapus id agar tidak terinput sebagai field
 
+                // 2. Buat santri baru di kelas tujuan menggunakan addDoc (tanpa butuh import setDoc)
                 const targetSantriRef = collection(db, "kelas", targetKelasId, "santri");
                 await addDoc(targetSantriRef, fullSantriData);
 
+                // 3. Hapus dokumen lama dari kelas asal
                 const oldSantriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
                 await deleteDoc(oldSantriDocRef);
+
             } else {
+                // KELAS TETAP SAMA: Update data biasa
                 const santriDocRef = doc(db, "kelas", selectedKelasId, "santri", selectedSantriId);
                 await updateDoc(santriDocRef, santriData);
             }
         } else {
+            // LOGIKA TAMBAH DATA BARU
             santriData.createdAt = new Date();
             const santriRef = collection(db, "kelas", targetKelasId, "santri");
             await addDoc(santriRef, santriData);
@@ -469,7 +485,8 @@ window.saveSantriData = async function(event) {
     }
 };
 
-window.deleteSantriData = async function(santriId) {
+// Hapus Santri dari Firebase
+async function deleteSantriData(santriId) {
     if (!confirm("Apakah Anda yakin ingin menghapus data santri ini?")) return;
 
     try {

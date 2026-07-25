@@ -22,36 +22,27 @@
     <template id="page-content">
         <div class="santri-page-container">
             
-            <!-- TOOLBAR UTAMA (TEMA BARU) -->
+            <!-- TOOLBAR UTAMA -->
             <div class="page-toolbar">
-                <div class="toolbar-info page-header-card">
-                    <div class="header-content-flex">
-                        <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()" title="Kembali ke Daftar Kelas">
-                            <i data-lucide="arrow-left"></i>
-                        </button>
-                        
-                        <div class="header-icon-wrapper">
-                            <i data-lucide="users"></i>
-                        </div>
-                        <div class="header-text-wrapper">
-                            <h2 class="page-title" id="page-title">Data Santri Per Kelas</h2>
-                            <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk melihat atau mengelola data santri.</p>
-                        </div>
-                    </div>
+                <div class="toolbar-info">
+                    <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
+                        <i data-lucide="arrow-left"></i>
+                        <span>Kembali ke Daftar Kelas</span>
+                    </button>
+                    <h2 class="page-title" id="page-title">Data Santri Per Kelas</h2>
+                    <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk melihat atau mengelola data santri.</p>
                 </div>
 
-                <!-- Tombol Aksi Utama (Dipindah ke bawah header) -->
-                <div id="toolbar-actions" class="selectors-container">
-                    <div class="action-btn-wrapper">
-                        <button id="btn-tambah-kelas" class="btn-action-primary" onclick="openModalKelas()">
-                            <i data-lucide="folder-plus"></i>
-                            <span>Tambah Kelas Baru</span>
-                        </button>
-                        <button id="btn-tambah-santri" class="btn-action-primary hidden" onclick="openFormSantriModal()">
-                            <i data-lucide="user-plus"></i>
-                            <span>Tambah Santri Baru</span>
-                        </button>
-                    </div>
+                <!-- Tombol Aksi Utama -->
+                <div id="toolbar-actions">
+                    <button id="btn-tambah-kelas" class="btn-primary" onclick="openModalKelas()">
+                        <i data-lucide="folder-plus" class="btn-icon"></i>
+                        <span>Tambah Kelas</span>
+                    </button>
+                    <button id="btn-tambah-santri" class="btn-primary hidden" onclick="openFormSantriModal()">
+                        <i data-lucide="user-plus" class="btn-icon"></i>
+                        <span>Tambah Santri</span>
+                    </button>
                 </div>
             </div>
 
@@ -60,7 +51,8 @@
                 
                 <!-- VIEW 1: DAFTAR KELAS -->
                 <div id="view-kelas">
-                    <div id="empty-state-kelas" class="empty-state hidden">
+                    <!-- Tampilan Kosong (Belum ada Kelas) -->
+                    <div id="empty-state-kelas" class="empty-state">
                         <div class="empty-icon-wrapper">
                             <i data-lucide="school"></i>
                         </div>
@@ -72,6 +64,7 @@
                         </button>
                     </div>
 
+                    <!-- Grid Card Kelas (Berurutan 1, 2, 3...) -->
                     <div id="kelas-grid-container" class="kelas-grid hidden">
                         <!-- Card kelas dimuat via JS -->
                     </div>
@@ -80,6 +73,7 @@
                 <!-- VIEW 2: SUB-MENU DAFTAR SANTRI & STATISTIK KELAS -->
                 <div id="view-santri" class="hidden">
                     
+                    <!-- Header Detail Kelas (Judul & Akses Edit/Hapus Kelas) -->
                     <div class="detail-kelas-header">
                         <div>
                             <h3 id="sub-kelas-title" class="sub-kelas-title">Detail Kelas</h3>
@@ -91,36 +85,51 @@
                             </button>
                             <button class="btn-action-sm btn-delete-kelas" onclick="deleteKelasData()">
                                 <i data-lucide="trash-2"></i>
-                                <span>Hapus</span>
+                                <span>Hapus Kelas</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- STATISTIK KELAS RINGKAS -->
+                    <!-- STATISTIK KELAS RINGKAS (COMPACT STAT STRIP) -->
                     <div class="stat-strip-container">
+                        <!-- Wali Kelas -->
                         <div class="stat-pill-card stat-wali">
-                            <div class="stat-pill-icon"><i data-lucide="user-check"></i></div>
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user-check"></i>
+                            </div>
                             <div class="stat-pill-content">
                                 <span class="stat-pill-label">Wali Kelas</span>
                                 <span id="stat-wali-kelas" class="stat-pill-value">-</span>
                             </div>
                         </div>
+
+                        <!-- Total Santri -->
                         <div class="stat-pill-card stat-total">
-                            <div class="stat-pill-icon"><i data-lucide="users"></i></div>
+                            <div class="stat-pill-icon">
+                                <i data-lucide="users"></i>
+                            </div>
                             <div class="stat-pill-content">
                                 <span class="stat-pill-label">Total</span>
                                 <span id="stat-total-santri" class="stat-pill-value">0 Santri</span>
                             </div>
                         </div>
+
+                        <!-- Santri Laki-Laki -->
                         <div class="stat-pill-card stat-male">
-                            <div class="stat-pill-icon"><i data-lucide="user"></i></div>
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user"></i>
+                            </div>
                             <div class="stat-pill-content">
                                 <span class="stat-pill-label">Laki-Laki</span>
                                 <span id="stat-count-l" class="stat-pill-value">0</span>
                             </div>
                         </div>
+
+                        <!-- Santri Perempuan -->
                         <div class="stat-pill-card stat-female">
-                            <div class="stat-pill-icon"><i data-lucide="user"></i></div>
+                            <div class="stat-pill-icon">
+                                <i data-lucide="user"></i>
+                            </div>
                             <div class="stat-pill-content">
                                 <span class="stat-pill-label">Perempuan</span>
                                 <span id="stat-count-p" class="stat-pill-value">0</span>
@@ -128,9 +137,12 @@
                         </div>
                     </div>
 
-                    <div id="empty-state-santri" class="empty-state hidden">
-                        <div class="empty-icon-wrapper"><i data-lucide="user-x"></i></div>
-                        <h3 class="empty-title">Belum Ada Santri</h3>
+                    <!-- Tampilan Kosong (Santri di kelas ini masih kosong) -->
+                    <div id="empty-state-santri" class="empty-state">
+                        <div class="empty-icon-wrapper">
+                            <i data-lucide="user-x"></i>
+                        </div>
+                        <h3 class="empty-title">Belum Ada Santri di Kelas Ini</h3>
                         <p class="empty-desc">Data santri untuk kelas ini belum diinput. Klik tombol di bawah untuk menambah santri.</p>
                         <button class="btn-primary-outline" onclick="openFormSantriModal()">
                             <i data-lucide="user-plus"></i>
@@ -138,17 +150,19 @@
                         </button>
                     </div>
 
+                    <!-- List Santri Berurutan (1, 2, 3...) -->
                     <div id="santri-list-container" class="santri-list hidden">
                         <!-- List nama santri dimuat via JS -->
                     </div>
                 </div>
 
             </div>
+
         </div>
 
         <!-- MODAL 1: TAMBAH / EDIT KELAS -->
         <div id="modal-kelas" class="modal-overlay">
-            <div class="modal-card modal-sm">
+            <div class="modal-card">
                 <div class="modal-header">
                     <div class="modal-header-title">
                         <i data-lucide="folder-plus" class="modal-header-icon"></i>
@@ -162,11 +176,12 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="nama-kelas-input">Nama / Tingkat Kelas *</label>
-                            <input type="text" id="nama-kelas-input" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="Contoh: Kelas 1, Kelas 2 A" required>
+                            <input type="text" id="nama-kelas-input" class="form-input" placeholder="Contoh: Kelas 1, Kelas 2 A" required>
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
+                        <!-- PILIH GURU DARI DATABASE -->
+                        <div class="form-group">
                             <label for="wali-kelas-input">Wali Kelas (Opsional)</label>
-                            <select id="wali-kelas-input" class="form-input-sm" style="width: 100%; padding: 10px;">
+                            <select id="wali-kelas-input" class="form-input">
                                 <option value="">-- Pilih Wali Kelas --</option>
                             </select>
                         </div>
@@ -191,19 +206,48 @@
                         <i data-lucide="x"></i>
                     </button>
                 </div>
+
                 <div class="modal-body detail-body">
-                    <div class="detail-item"><span class="detail-label">Nama Santri</span><div id="detail-santri-nama" class="detail-value text-bold">-</div></div>
-                    <div class="detail-item"><span class="detail-label">Jenis Kelamin</span><div id="detail-santri-jk" class="detail-value">-</div></div>
-                    <div class="detail-item"><span class="detail-label">Nomor Induk / NIS</span><div id="detail-santri-nis" class="detail-value">-</div></div>
-                    <div class="detail-item"><span class="detail-label">Nama Ayah</span><div id="detail-santri-ayah" class="detail-value">-</div></div>
-                    <div class="detail-item"><span class="detail-label">Nama Ibu</span><div id="detail-santri-ibu" class="detail-value">-</div></div>
-                    <div class="detail-item"><span class="detail-label">No. HP / WhatsApp Wali</span><div id="detail-santri-hp" class="detail-value">-</div></div>
-                    <div class="detail-item"><span class="detail-label">Alamat</span><div id="detail-santri-alamat" class="detail-value">-</div></div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Santri</span>
+                        <div id="detail-santri-nama" class="detail-value text-bold">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Jenis Kelamin</span>
+                        <div id="detail-santri-jk" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nomor Induk / NIS</span>
+                        <div id="detail-santri-nis" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Ayah</span>
+                        <div id="detail-santri-ayah" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Ibu</span>
+                        <div id="detail-santri-ibu" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">No. HP / WhatsApp Wali</span>
+                        <div id="detail-santri-hp" class="detail-value">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Alamat</span>
+                        <div id="detail-santri-alamat" class="detail-value">-</div>
+                    </div>
                 </div>
+
                 <div class="modal-footer detail-footer">
                     <button type="button" class="btn btn-cancel" onclick="closeDetailSantriModal()">Tutup</button>
-                    <button type="button" class="btn btn-edit" id="btn-edit-santri"><i data-lucide="edit-3"></i><span>Edit</span></button>
-                    <button type="button" class="btn btn-danger" id="btn-delete-santri"><i data-lucide="trash-2"></i><span>Hapus</span></button>
+                    <button type="button" class="btn btn-edit" id="btn-edit-santri">
+                        <i data-lucide="edit-3"></i>
+                        <span>Edit</span>
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-delete-santri">
+                        <i data-lucide="trash-2"></i>
+                        <span>Hapus</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -220,48 +264,64 @@
                         <i data-lucide="x"></i>
                     </button>
                 </div>
+
                 <form id="form-santri" onsubmit="saveSantriData(event)">
                     <div class="modal-body">
-                        <p class="form-note">* Hanya Nama Santri dan Kelas yang wajib diisi.</p>
+                        <p class="form-note">* Hanya Nama Santri dan Kelas yang wajib diisi. Kolom lain boleh dikosongkan.</p>
+
+                        <!-- PILIH / UBAH KELAS -->
                         <div class="form-group">
                             <label for="santri-kelas">Kelas Santri *</label>
-                            <select id="santri-kelas" class="form-input-sm" style="width: 100%; padding: 10px;" required></select>
+                            <select id="santri-kelas" class="form-input" required>
+                                <!-- Dimuat otomatis via JS -->
+                            </select>
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
+                        
+                        <div class="form-group">
                             <label for="santri-nama">Nama Lengkap Santri *</label>
-                            <input type="text" id="santri-nama" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="Masukkan nama santri..." required>
+                            <input type="text" id="santri-nama" class="form-input" placeholder="Masukkan nama santri..." required>
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
+
+                        <div class="form-group">
                             <label for="santri-jk">Jenis Kelamin</label>
-                            <select id="santri-jk" class="form-input-sm" style="width: 100%; padding: 10px;">
+                            <select id="santri-jk" class="form-input">
                                 <option value="Laki-laki">Laki-laki</option>
                                 <option value="Perempuan">Perempuan</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="santri-nis">Nomor Induk / NIS</label>
-                            <input type="text" id="santri-nis" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="Contoh: 2026001">
+
+                        <div class="form-group">
+                            <label for="santri-nis">Nomor Induk / NIS (Opsional)</label>
+                            <input type="text" id="santri-nis" class="form-input" placeholder="Contoh: 2026001">
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="santri-ayah">Nama Ayah</label>
-                            <input type="text" id="santri-ayah" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="Nama ayah santri...">
+
+                        <div class="form-group">
+                            <label for="santri-ayah">Nama Ayah (Opsional)</label>
+                            <input type="text" id="santri-ayah" class="form-input" placeholder="Nama ayah santri...">
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="santri-ibu">Nama Ibu</label>
-                            <input type="text" id="santri-ibu" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="Nama ibu santri...">
+
+                        <div class="form-group">
+                            <label for="santri-ibu">Nama Ibu (Opsional)</label>
+                            <input type="text" id="santri-ibu" class="form-input" placeholder="Nama ibu santri...">
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="santri-hp">Nomor HP / WA Wali</label>
-                            <input type="tel" id="santri-hp" class="form-input-sm" style="width: 100%; padding: 10px;" placeholder="08xxxxxxxxxx">
+
+                        <div class="form-group">
+                            <label for="santri-hp">Nomor HP / WA Wali (Opsional)</label>
+                            <input type="tel" id="santri-hp" class="form-input" placeholder="08xxxxxxxxxx">
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="santri-alamat">Alamat</label>
-                            <textarea id="santri-alamat" class="form-input-sm" style="width: 100%; padding: 10px; resize: vertical;" rows="2" placeholder="Alamat singkat santri..."></textarea>
+
+                        <div class="form-group">
+                            <label for="santri-alamat">Alamat (Opsional)</label>
+                            <textarea id="santri-alamat" class="form-input form-textarea" rows="2" placeholder="Alamat singkat santri..."></textarea>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-cancel" onclick="closeFormSantriModal()">Batal</button>
-                        <button type="submit" class="btn btn-save-active" id="btn-simpan-santri"><i data-lucide="save"></i><span>Simpan Data</span></button>
+                        <button type="submit" class="btn btn-save-active" id="btn-simpan-santri">
+                            <i data-lucide="save"></i>
+                            <span>Simpan Data</span>
+                        </button>
                     </div>
                 </form>
             </div>
