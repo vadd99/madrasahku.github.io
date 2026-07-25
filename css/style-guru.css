@@ -1,47 +1,15 @@
-/* Layout Halaman Guru */
+.hidden { display: none !important; }
+
+/* =========================================================
+   CONTAINER UTAMA & CONTENT CARD
+   ========================================================= */
 .guru-page-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
     height: 100%;
-}
-
-.page-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.page-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-main);
-}
-
-.page-subtitle {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-}
-
-/* Button Primary */
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--accent-gradient);
-    color: #030712;
-    font-weight: 700;
-    font-size: 0.82rem;
-    padding: 9px 16px;
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-    cursor: pointer;
-}
-
-.btn-icon {
-    width: 16px;
-    height: 16px;
+    max-height: 100%; 
+    overflow: hidden;
 }
 
 .guru-content-card {
@@ -49,54 +17,261 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     flex: 1;
-    padding: 16px;
+    padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden; 
+    min-height: 0; 
+    position: relative;
+    box-sizing: border-box;
 }
 
-/* Empty State */
+/* =========================================================
+   HEADER BARU (MENDUKUNG LIGHT & DARK MODE)
+   ========================================================= */
+.page-header-card {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.05) 0%, #ffffff 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px; 
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+body.dark .page-header-card {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.2) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.page-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, transparent);
+    opacity: 0.9;
+}
+
+.header-content-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon-wrapper {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.header-icon-wrapper i { width: 20px; height: 20px; }
+
+.header-text-wrapper .page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b; 
+    margin: 0 0 2px 0;
+}
+body.dark .header-text-wrapper .page-title { color: #ffffff; }
+
+.header-text-wrapper .page-subtitle {
+    font-size: 0.75rem;
+    color: #64748b; 
+    margin: 0;
+    line-height: 1.3;
+}
+body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
+
+/* =========================================================
+   WADAH TOMBOL AKSI UTAMA (Di bawah header)
+   ========================================================= */
+.selectors-container {
+    display: flex; 
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.action-btn-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%; 
+    gap: 12px;
+    background: #ffffff; 
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+}
+
+body.dark .action-btn-wrapper {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-action-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-action-primary:hover {
+    background: #059669;
+}
+
+.btn-action-primary i {
+    width: 18px;
+    height: 18px;
+}
+
+/* =========================================================
+   PERBAIKAN LIST GURU AGAR RAPI (TEMA ABSENSI/SANTRI)
+   ========================================================= */
+.guru-list-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.guru-card-item { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    background-color: var(--bg-main); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-md); 
+    padding: 12px 16px; 
+    cursor: pointer; 
+    transition: var(--transition); 
+    width: 100%;
+    box-sizing: border-box;
+}
+.guru-card-item:hover { border-color: var(--primary-border); transform: translateX(3px); }
+
+.guru-card-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+}
+
+.guru-info {
+    text-align: left;
+    display: block;
+    min-width: 0;
+}
+
+.guru-name { 
+    font-size: 0.92rem; 
+    font-weight: 700; 
+    color: var(--text-main); 
+    text-align: left !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.guru-meta-counters { 
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start;
+    gap: 8px; 
+    margin-top: 4px; 
+}
+
+.rekap-pill { 
+    font-size: 0.7rem; 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    background: rgba(255, 255, 255, 0.05); 
+    color: var(--text-light); 
+    border: 1px solid var(--border-color); 
+}
+body:not(.dark) .rekap-pill { background: #f1f5f9; color: #475569; }
+
+.guru-card-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
+.chevron-icon { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
+
+.number-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 50px 16px;
+    padding: 40px 16px;
     text-align: center;
+    background: var(--bg-main); 
+    border: 1px dashed var(--border-color); 
+    border-radius: var(--radius-md); 
 }
 
 .empty-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--primary-light);
-    border: 1px solid var(--primary-border);
-    color: var(--primary-text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
+    width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); 
+    color: #10b981; border-radius: 50%; display: flex; align-items: center; 
+    justify-content: center; margin-bottom: 16px; 
 }
-
-.empty-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 4px;
-}
-
-.empty-desc {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    max-width: 320px;
-    margin-bottom: 16px;
-}
+.empty-icon-wrapper i { width: 30px; height: 30px; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+.empty-desc { font-size: 0.85rem; color: var(--text-muted); max-width: 350px; margin: 0 auto 20px auto; line-height: 1.4; }
 
 .btn-primary-outline {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     background-color: transparent;
-    color: var(--primary-text);
-    border: 1px solid var(--primary-border);
+    color: #10b981;
+    border: 1px solid #10b981;
     padding: 8px 14px;
     border-radius: var(--radius-md);
     font-weight: 600;
@@ -104,240 +279,39 @@
     cursor: pointer;
 }
 
-/* Container & Grid List Guru */
-.guru-list-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* =========================================================
+   MODAL & FORM
+   ========================================================= */
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+.modal-header-title { display: flex; align-items: center; gap: 10px; }
+.modal-header-title h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+.modal-header-icon { width: 20px; height: 20px; color: #10b981; }
 
-/* Kartu Tiap Guru */
-.guru-card-item {
-    background-color: var(--bg-sidebar);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: var(--transition);
-}
+.btn-close-modal { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 32px; border-radius: var(--radius-sm, 6px); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+.btn-close-modal:hover { background-color: rgba(255, 255, 255, 0.08); color: var(--text-main); }
+.btn-close-modal i, .btn-close-modal svg { width: 18px; height: 18px; }
 
-.guru-card-item:hover {
-    border-color: var(--primary-border);
-    transform: translateY(-2px);
-    background-color: var(--primary-light);
-}
+.detail-body { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.detail-item { display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+.detail-item:last-child { border-bottom: none; }
+.detail-label { font-size: 0.7rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; }
+.detail-value { font-size: 0.85rem; color: var(--text-main); }
+.text-bold { font-weight: 700; }
 
-/* Bagian Kiri (Nomor + Teks Info Guru) */
-.guru-info-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+.form-group { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.form-group label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
 
-/* Badge Nomor Urut Guru */
-.guru-number-badge {
-    width: 36px;
-    height: 36px;
-    background-color: var(--primary-light);
-    color: var(--primary-text);
-    border: 1px solid var(--primary-border);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.88rem;
-    flex-shrink: 0;
-}
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+.modal-footer .btn { padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.modal-footer .btn-cancel { background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+.modal-footer .btn-cancel:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+.modal-footer .btn-save-active { background-color: #10b981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+.modal-footer .btn-save-active:hover { background-color: #059669 !important; }
 
-/* Teks Info Nama & Kelas Pengampu */
-.guru-text-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
-}
+.btn-edit { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 600; }
+.btn-edit:hover { background-color: rgba(59, 130, 246, 0.25); }
+.btn-danger { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.btn-danger:hover { background-color: rgba(239, 68, 68, 0.25); }
 
-.guru-name {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.2;
-}
-
-.guru-class-badge {
-    display: inline-block;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-/* Ikon Panah Kanan */
-.chevron-icon {
-    width: 18px;
-    height: 18px;
-    color: var(--text-light);
-    flex-shrink: 0;
-}
-
-.guru-card-item:hover .chevron-icon {
-    color: var(--primary-text);
-}
-
-/* Detail Modal Styles */
-.detail-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    text-align: left;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-}
-
-.detail-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.detail-label {
-    font-size: 0.72rem;
-    color: var(--text-light);
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.detail-value {
-    font-size: 0.88rem;
-    color: var(--text-main);
-}
-
-.text-bold {
-    font-weight: 700;
-}
-
-.detail-footer {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-edit {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    font-weight: 600;
-}
-
-.btn-edit:hover {
-    background-color: rgba(59, 130, 246, 0.25);
-}
-
-/* Style Tombol Simpan */
-.btn-save {
-    background: var(--accent-gradient);
-    color: #030712;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 18px;
-    border-radius: var(--radius-md);
-    transition: var(--transition);
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-}
-
-/* Saat Form Belum Lengkap (Mati / Redup) */
-.btn-save:disabled {
-    background: #1e293b !important;
-    color: #64748b !important;
-    border: 1px solid var(--border-color);
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: 0.6;
-    transform: none !important;
-}
-
-/* Saat Form Sudah Terisi Semua (Hover Efek) */
-.btn-save:not(:disabled):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
-}
-
-/* Modal Core Overrides */
-.modal-card {
-    background-color: var(--bg-sidebar);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    width: 100%;
-    max-width: 420px;
-    box-shadow: var(--shadow-lg);
-}
-
-.modal-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.modal-header-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.modal-header-icon {
-    width: 18px;
-    height: 18px;
-    color: var(--primary-text);
-}
-
-.modal-body {
-    padding: 16px 18px;
-}
-
-.modal-footer {
-    padding: 12px 18px;
-    border-top: 1px solid var(--border-color);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 12px;
-    text-align: left;
-}
-
-.form-group label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.form-input {
-    padding: 9px 12px;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    color: var(--text-main);
-    font-size: 0.85rem;
-    outline: none;
-}
-
-.hidden {
-    display: none !important;
-}
+/* Input dari CSS bawaan (komponen sm) */
+.form-input-sm { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; }

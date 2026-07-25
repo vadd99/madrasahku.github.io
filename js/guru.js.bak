@@ -44,21 +44,18 @@ async function loadGuruFromFirebase() {
 
         let listHtml = "";
         listGuru.forEach((guru, index) => {
-            // Sruktur HTML card diperbarui menyesuaikan CSS yang seragam dengan Santri/Absensi
             listHtml += `
                 <div class="guru-card-item" onclick="openDetailModal('${guru.id}')">
-                    <div class="guru-card-left">
-                        <div class="number-badge">${index + 1}</div>
-                        <div class="guru-info">
+                    <div class="guru-info-wrapper">
+                        <div class="guru-number-badge">${index + 1}</div>
+                        <div class="guru-text-info">
                             <div class="guru-name">${guru.nama}</div>
-                            <div class="guru-meta-counters">
-                                <span class="rekap-pill">Kelas: <b>${guru.kelasAjar || 'Belum Ditentukan'}</b></span>
+                            <div>
+                                <span class="guru-class-badge">${guru.kelasAjar || 'Belum Ditentukan'}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="guru-card-right">
-                        <i data-lucide="chevron-right" class="chevron-icon"></i>
-                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
             `;
         });
