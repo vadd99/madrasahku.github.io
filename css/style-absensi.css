@@ -202,7 +202,7 @@ body.dark .imtihan-selector-wrapper select {
 .kelas-card-item {
     display: flex;
     align-items: center;
-    background: #ffffff; 
+    background: #ffffff; /* Putih bersih untuk Light Mode */
     border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 16px;
@@ -212,10 +212,11 @@ body.dark .imtihan-selector-wrapper select {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* === PERBAIKAN DARK MODE: Background disamakan dengan Daftar Santri === */
 body.dark .kelas-card-item {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: var(--bg-main); /* Menggunakan variabel warna gelap murni yang sama dengan santri */
+    border: 1px solid var(--border-color); /* Menyamakan garis batas */
+    box-shadow: none; /* Menghilangkan bayangan agar terlihat lebih flat/solid */
 }
 
 .kelas-card-item:hover {
@@ -226,9 +227,12 @@ body.dark .kelas-card-item {
 }
 
 body.dark .kelas-card-item:hover {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 1) 100%);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+    background-color: var(--bg-main); /* Tetap gelap solid saat dihover */
+    border-color: var(--primary-border); /* Menggunakan warna border primary (hijau) yang standar */
+    box-shadow: none;
+    transform: translateX(3px); /* Ubah efek angkat (translateY) menjadi geser samping (translateX) seperti santri */
 }
+
 
 .kelas-icon-wrapper {
     background: rgba(16, 185, 129, 0.15); color: #10b981;

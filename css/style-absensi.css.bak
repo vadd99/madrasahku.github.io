@@ -112,7 +112,7 @@ body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
 
 
 /* =========================================================
-   SELECTOR PERIODE
+   SELECTOR PERIODE (DI-UPDATE DENGAN BACKGROUND CARD)
    ========================================================= */
 .selectors-container {
     display: flex; 
@@ -120,25 +120,66 @@ body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
     margin-bottom: 16px;
 }
 
+/* Pembungkus Card untuk Selector */
 .imtihan-selector-wrapper {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center; /* Membuat teks dan kotak pilihan sejajar menyamping */
     width: 100%; 
-    gap: 6px;
+    gap: 12px;
+    background: #ffffff; /* Warna Card Light Mode */
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
+body.dark .imtihan-selector-wrapper {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Label Ikon & Teks "Periode" */
 .imtihan-selector-wrapper label {
-    display: flex; align-items: center; gap: 4px; margin: 0;
-    font-size: 0.75rem; font-weight: 600; color: var(--text-muted); 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    margin: 0;
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: #475569; /* Teks Light Mode */
+    white-space: nowrap; /* Mencegah teks turun ke baris baru */
 }
 
+body.dark .imtihan-selector-wrapper label {
+    color: #94a3b8; /* Teks Dark Mode */
+}
+
+/* Modifikasi Kotak Select Dropdown */
 .imtihan-selector-wrapper select {
     width: 100%;
     padding: 8px 10px;
     font-size: 0.85rem;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #1e293b;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
+body.dark .imtihan-selector-wrapper select {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.imtihan-selector-wrapper select:focus {
+    border-color: #10b981;
+}
+
+/* Reset .form-input-sm khusus elemen lain jika ada */
 .form-input-sm { 
     background: var(--bg-main); 
     color: var(--text-main); 
@@ -146,6 +187,7 @@ body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
     border-radius: var(--radius-sm); 
     outline: none; 
 }
+
 
 /* =========================================================
    GRID KELAS BARU (MENDUKUNG LIGHT & DARK MODE)
