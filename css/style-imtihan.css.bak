@@ -1,6 +1,5 @@
-
 /* =========================================================
-   STYLE KHUSUS REKAP IMTIHAN - EDISI RAPORT
+   STYLE KHUSUS REKAP IMTIHAN
    ========================================================= */
 
 .header-icon-wrapper.imtihan-icon {
@@ -11,7 +10,7 @@
 
 /* Modal Imtihan (Lebih besar) */
 .modal-lg.modal-imtihan {
-    max-width: 600px;
+    max-width: 600px; /* Lebih lebar dari input UH */
     width: 95%;
     max-height: 90vh;
     display: flex;
@@ -28,7 +27,7 @@ body.dark .imtihan-modal-body {
     background: var(--bg-body);
 }
 
-/* Grand Total Banner (Menyesuaikan Raport) */
+/* Grand Total Banner */
 .grand-total-banner {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
@@ -92,16 +91,16 @@ body.dark .mapel-card-header {
 
 body.dark .mapel-card-header h4 { color: #fff; }
 
-/* Grid Statistik per Mapel (Disesuaikan untuk Raport) */
+/* Grid Statistik per Mapel */
 .imtihan-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* Kolom huruf dibuat agak lebar */
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
 }
 
 @media (max-width: 480px) {
     .imtihan-stats-grid {
-        grid-template-columns: repeat(2, 1fr); 
+        grid-template-columns: repeat(2, 1fr); /* 2 kolom di HP */
     }
 }
 
@@ -126,11 +125,6 @@ body.dark .stat-box {
     border-color: rgba(16, 185, 129, 0.3);
 }
 
-.stat-box.highlight-huruf {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
 .stat-label {
     font-size: 0.65rem;
     color: #64748b;
@@ -147,21 +141,10 @@ body.dark .stat-label { color: #94a3b8; }
     color: #1e293b;
 }
 
-.stat-value-sm {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
-}
-
-body.dark .stat-value, body.dark .stat-value-sm { color: #e2e8f0; }
+body.dark .stat-value { color: #e2e8f0; }
 
 .stat-value.highlight-text {
     color: #10b981;
-}
-
-.highlight-text-huruf {
-    color: #d97706;
 }
 
 /* Input Imtihan */
@@ -206,63 +189,4 @@ body.dark .input-imtihan {
     display: flex;
     align-items: center;
     gap: 4px;
-}
-
-/* Raport Summary Card (Bagian Bawah) */
-.raport-summary-card {
-    background: #f8fafc;
-    border: 1px dashed #94a3b8;
-    border-radius: 12px;
-    padding: 15px;
-    margin-top: 20px;
-}
-
-body.dark .raport-summary-card {
-    background: rgba(0,0,0,0.2);
-    border-color: #475569;
-}
-
-.raport-summary-card h4 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1rem;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-body.dark .raport-summary-card h4 { color: #cbd5e1; }
-
-.summary-flex {
-    display: flex;
-    gap: 15px;
-}
-
-.sum-item {
-    flex: 1;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-body.dark .sum-item {
-    background: var(--bg-main);
-    border-color: var(--border-color);
-}
-
-.sum-label {
-    font-size: 0.85rem;
-    color: #64748b;
-    font-weight: 600;
-}
-
-.sum-val {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #10b981;
 }

@@ -16,11 +16,16 @@ window.closeGuideBoxImtihan = function() {
     if (box) box.style.display = "none";
 };
 
+// ==========================================
+// BAGIAN YANG DIPERBAIKI (INISIALISASI & OBSERVER)
+// ==========================================
 let isInitialized = false;
 function initImtihanView() {
     if (isInitialized) return;
-    const viewSantri = document.getElementById("view-santri");
-    if (viewSantri) {
+    
+    // Perbaikan: Mencari elemen view-kelas, bukan view-santri
+    const viewKelas = document.getElementById("view-kelas");
+    if (viewKelas) {
         isInitialized = true;
         const selectPeriode = document.getElementById("select-periode-imtihan");
         if (selectPeriode) activePeriode = selectPeriode.value;
@@ -34,6 +39,17 @@ if (document.readyState === "loading") {
     initImtihanView();
 }
 document.addEventListener("layoutReady", initImtihanView);
+
+// Perbaikan: Menambahkan pengamat (Observer) untuk menunggu template HTML selesai dimuat
+const observer = new MutationObserver(() => {
+    if (document.getElementById("view-kelas") && !isInitialized) {
+        initImtihanView();
+        observer.disconnect(); 
+    }
+});
+observer.observe(document.documentElement, { childList: true, subtree: true });
+// ==========================================
+
 
 window.changePeriode = function(val) {
     activePeriode = val;
@@ -162,7 +178,6 @@ async function loadSantriImtihanList(kelasId) {
         snapUH.forEach(d => rawUH.push(d.data()));
 
         // 4. Ambil data Nilai Imtihan (rekap_imtihan) periode ini
-        // Asumsi struktur docId: kelasId_periode_santriId
         const qImtihan = query(collection(db, "rekap_imtihan"), where("kelasId", "==", kelasId), where("imtihan", "==", activePeriode));
         const snapImtihan = await getDocs(qImtihan);
         let rawImtihan = {}; // rawImtihan[santriId] = { mapelA: 90, mapelB: 85 }
@@ -202,7 +217,6 @@ async function loadSantriImtihanList(kelasId) {
                 }
 
                 // Kalkulasi Nilai Akhir Mapel: (Rata UH + Imtihan) / 2
-                // Jika tidak ada UH tapi ada Imtihan, nilai akhir = imtihan
                 let finalScore = 0;
                 if (countUH > 0 && imtihanScore > 0) finalScore = (avgUH + imtihanScore) / 2;
                 else if (countUH > 0) finalScore = avgUH / 2;
