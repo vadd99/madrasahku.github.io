@@ -15,7 +15,7 @@ let selectedSantriId = null;
 
 let activeImtihan = "Imtihan 1";
 let todayAttendance = {}; 
-let initialAttendance = {}; 
+let initialAttendance = {}; // Menyimpan data AWAL absensi (Untuk deteksi perubahan)
 let rekapAttendance = {}; 
 let todayAbsensiDocId = null; 
 
@@ -72,7 +72,7 @@ async function renderMainView() {
 }
 
 /* ===================================================
-   1. LOAD DAFTAR KELAS DENGAN HITUNG JUMLAH SANTRI
+   1. LOAD DAFTAR KELAS (DARI DATABASE)
    =================================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
@@ -82,9 +82,6 @@ async function loadKelasFromFirebase() {
     const btnBack = document.getElementById("btn-back-kelas");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
-    
-    const selectorsContainer = document.getElementById("absensi-selectors");
-    if (selectorsContainer) selectorsContainer.classList.add("hidden");
 
     if (!viewAbsensi || !gridContainer) return;
 
@@ -97,29 +94,15 @@ async function loadKelasFromFirebase() {
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
         listKelas = [];
-        
-        // Mengambil data kelas sekaligus menghitung santri
-        const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
+        querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            const kelasId = docSnap.id;
-            
-            let jumlahSantri = 0;
-            try {
-                const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
-                jumlahSantri = santriSnap.size;
-            } catch (e) {
-                console.warn("Gagal mengambil jumlah santri:", e);
-            }
-
-            return {
-                id: kelasId,
+            listKelas.push({
+                id: docSnap.id,
                 namaKelas: data.namaKelas || data.nama || "Kelas Tanpa Nama",
-                waliKelas: data.waliKelas || "-",
-                jumlahSantri: jumlahSantri
-            };
+                waliKelas: data.waliKelas || "-"
+            });
         });
 
-        listKelas = await Promise.all(kelasPromises);
         listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
 
         if (listKelas.length === 0) {
@@ -135,25 +118,11 @@ async function loadKelasFromFirebase() {
         listKelas.forEach((kelas) => {
             cardsHtml += `
                 <div class="kelas-card-item" onclick="openAbsensiSubMenu('${kelas.id}')">
-                    <div class="kelas-icon-wrapper">
-                        <i data-lucide="book-open"></i>
-                    </div>
-                    
                     <div class="kelas-info">
                         <div class="kelas-name">${kelas.namaKelas}</div>
-                        <div class="kelas-meta">
-                            <span class="meta-badge meta-wali">
-                                <i data-lucide="user"></i> Wali: ${kelas.waliKelas}
-                            </span>
-                            <span class="meta-badge meta-santri">
-                                <i data-lucide="users"></i> ${kelas.jumlahSantri} Santri
-                            </span>
-                        </div>
+                        <div class="kelas-count">Wali: ${kelas.waliKelas}</div>
                     </div>
-
-                    <div class="kelas-action">
-                        <i data-lucide="chevron-right"></i>
-                    </div>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
                 </div>
             `;
         });
@@ -185,16 +154,13 @@ async function loadAbsensiSubMenu(kelasId) {
     const btnBack = document.getElementById("btn-back-kelas");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
-    const selectorsContainer = document.getElementById("absensi-selectors");
 
     if (!viewAbsensi) return;
-
-    if (selectorsContainer) selectorsContainer.classList.remove("hidden");
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     if (btnBack) btnBack.classList.remove("hidden");
     if (pageTitle) pageTitle.innerText = `Absensi - ${selectedKelasData.namaKelas}`;
-    if (pageSubtitle) pageSubtitle.innerText = `Daftar presensi santri untuk kelas ini.`;
+    if (pageSubtitle) pageSubtitle.innerText = `Daftar presensi santri untuk ${selectedKelasData.namaKelas}.`;
 
     const elDate = document.getElementById("today-date-text");
     if (elDate) elDate.innerText = getTodayFormatted();
@@ -240,15 +206,17 @@ async function loadAbsensiSubMenu(kelasId) {
             }
         });
 
-        // SET DEFAULT NULL (BELUM DIABSEN)
+        // SET DEFAULT NULL (BELUM DIABSEN) UNTUK SANTRI YANG BELUM PUNYA STATUS HARI INI
         listSantri.forEach(s => {
             if (todayAttendance[s.id] === undefined) {
                 todayAttendance[s.id] = null;
             }
         });
 
+        // CLONE DATA AWAL UNTUK MENDETEKSI PERUBAHAN BUTTON SIMPAN
         initialAttendance = { ...todayAttendance };
         checkUnsavedChanges(); 
+
         renderSantriAbsensiList();
     } catch (error) {
         console.error("Gagal memuat data absensi:", error);
@@ -268,6 +236,7 @@ function checkUnsavedChanges() {
         }
     }
 
+    // Jika ada yang diganti/diisi, nyalakan tombol. Jika kembali seperti semula, matikan.
     if (hasChanges) {
         btnSave.removeAttribute("disabled");
     } else {
@@ -336,6 +305,7 @@ window.openModalStatus = function(santriId) {
     const currentStatus = todayAttendance[santriId];
     const radios = document.getElementsByName("status-kehadiran");
     for (let r of radios) { 
+        // Hanya centang radio jika status sudah terisi sebelumnya
         r.checked = (currentStatus && r.value === currentStatus); 
     }
 
@@ -361,6 +331,7 @@ window.applySantriStatusChange = function() {
     closeModalStatus();
     renderSantriAbsensiList();
     
+    // CEK PERUBAHAN UNTUK AKTIFKAN TOMBOL SIMPAN
     checkUnsavedChanges();
 };
 
@@ -408,10 +379,14 @@ window.saveTodayAbsensi = async function() {
         btnSave.innerHTML = originalText;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
+        // 1. Update data awal agar mendeteksi bahwa kondisi saat ini sudah tersimpan
         initialAttendance = { ...todayAttendance };
+        
+        // 2. Cek lagi (sehingga tombol simpan menjadi disabled/redup kembali)
         checkUnsavedChanges();
         
-        showSuccessModal(`Data absensi tanggal ${getTodayFormatted()} berhasil disimpan.`);
+        // 3. Tampilkan Pop-Up Sukses
+        showSuccessModal(`Data absensi tanggal ${getTodayFormatted()} berhasil disimpan ke database.`);
         
         await loadAbsensiSubMenu(selectedKelasId);
     } catch (error) {

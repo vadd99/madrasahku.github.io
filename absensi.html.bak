@@ -20,33 +20,21 @@
         <div class="absensi-page-container">
             
             <div class="page-toolbar">
-                <!-- Header Card dengan tombol back minimalis di dalam flex -->
-                <div class="toolbar-info page-header-card">
-                    <div class="header-content-flex">
-                        
-                        <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()" title="Kembali ke Daftar Kelas">
-                            <i data-lucide="arrow-left"></i>
-                        </button>
-                        
-                        <div class="header-icon-wrapper">
-                            <i data-lucide="clipboard-check"></i>
-                        </div>
-                        <div class="header-text-wrapper">
-                            <h2 class="page-title" id="page-title">Absensi Santri</h2>
-                            <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola kehadiran santri harian.</p>
-                        </div>
-                    </div>
+                <div class="toolbar-info">
+                    <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()">
+                        <i data-lucide="arrow-left"></i>
+                        <span>Kembali ke Daftar Kelas</span>
+                    </button>
+                    <h2 class="page-title" id="page-title">Absensi Santri</h2>
+                    <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola kehadiran santri harian.</p>
                 </div>
 
-                <!-- Selector dipisah ke bawah header -->
-                <div id="absensi-selectors" class="selectors-container hidden">
-                    <div class="imtihan-selector-wrapper">
-                        <label for="select-imtihan"><i data-lucide="award" style="width: 14px; height: 14px;"></i> Periode</label>
-                        <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
-                            <option value="Imtihan 1">Imtihan 1 (Semester Ganjil)</option>
-                            <option value="Imtihan 2">Imtihan 2 (Semester Genap)</option>
-                        </select>
-                    </div>
+                <div class="imtihan-selector-wrapper">
+                    <label for="select-imtihan"><i data-lucide="award"></i> Periode:</label>
+                    <select id="select-imtihan" class="form-input-sm" onchange="changeImtihanPeriod(this.value)">
+                        <option value="Imtihan 1">Imtihan 1 (Semester Ganjil)</option>
+                        <option value="Imtihan 2">Imtihan 2 (Semester Genap)</option>
+                    </select>
                 </div>
             </div>
 
@@ -77,10 +65,10 @@
                             <i data-lucide="calendar"></i>
                             <span id="today-date-text">Rabu, 24 Juli 2026</span>
                         </div>
-                        <!-- BUTTON SIMPAN -->
+                        <!-- BUTTON SIMPAN DENGAN ID DAN KONDISI AWAL DISABLED -->
                         <button id="btn-save-absensi" class="btn-primary btn-save-absensi" onclick="saveTodayAbsensi()" disabled>
                             <i data-lucide="check-circle-2"></i>
-                            <span>Simpan Absensi</span>
+                            <span>Simpan Absensi Hari Ini</span>
                         </button>
                     </div>
                 </div>
@@ -134,7 +122,7 @@
             </div>
         </div>
 
-        <!-- MODAL SUKSES CUSTOM -->
+        <!-- MODAL SUKSES CUSTOM (PENGGANTI ALERT) -->
         <div id="modal-success-alert" class="modal-overlay">
             <div class="modal-card modal-sm text-center">
                 <div class="success-icon-wrapper">
