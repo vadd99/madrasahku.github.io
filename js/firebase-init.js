@@ -1,7 +1,6 @@
 // Import SDK Firebase dari CDN Google
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-// TAMBAHAN: Menambahkan query dan where pada import ini
 import { 
     getFirestore, 
     collection, 
@@ -11,7 +10,8 @@ import {
     deleteDoc, 
     doc,
     query,
-    where 
+    where,
+    setDoc   // <--- PERBAIKAN 1: Tambahkan di sini
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Konfigurasi Firebase Anda
@@ -28,11 +28,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// TAMBAHAN: Menambahkan query dan where pada export ini
 export { 
     db, 
     collection, 
     getDocs, 
+    setDoc,  // <--- PERBAIKAN 2: Hapus huruf 's', jadi setDoc
     addDoc, 
     updateDoc, 
     deleteDoc, 
