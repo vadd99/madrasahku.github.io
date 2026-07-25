@@ -137,7 +137,7 @@ window.simpanMapelBaru = async function() {
 }
 
 /* ===================================================
-   LOAD DAFTAR KELAS
+   LOAD DAFTAR KELAS (DI-UPDATE DENGAN DESAIN BARU)
    =================================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
@@ -162,15 +162,33 @@ async function loadKelasFromFirebase() {
     try {
         const querySnapshot = await getDocs(collection(db, "kelas"));
         listKelas = [];
-        querySnapshot.forEach((docSnap) => {
+        
+        // MENGAMBIL DATA KELAS SEKALIGUS MENGHITUNG JUMLAH SANTRI
+        const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
-            listKelas.push({
-                id: docSnap.id,
+            const kelasId = docSnap.id;
+            
+            let jumlahSantri = 0;
+            try {
+                // Menghitung jumlah santri dari sub-koleksi
+                const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
+                jumlahSantri = santriSnap.size;
+            } catch (e) {
+                console.warn("Gagal mengambil jumlah santri:", e);
+            }
+
+            return {
+                id: kelasId,
                 namaKelas: data.namaKelas || data.nama || "Kelas Tanpa Nama",
-                waliKelas: data.waliKelas || "-"
-            });
+                waliKelas: data.waliKelas || "-",
+                jumlahSantri: jumlahSantri
+            };
         });
 
+        // Tunggu semua proses hitung santri selesai
+        listKelas = await Promise.all(kelasPromises);
+        
+        // Urutkan kelas berdasarkan nama
         listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
 
         if (listKelas.length === 0) {
@@ -186,11 +204,27 @@ async function loadKelasFromFirebase() {
         listKelas.forEach((kelas) => {
             cardsHtml += `
                 <div class="kelas-card-item" onclick="openNilaiSubMenu('${kelas.id}')">
+                    <div class="kelas-icon-wrapper">
+                        <i data-lucide="book-open"></i>
+                    </div>
+                    
                     <div class="kelas-info">
                         <div class="kelas-name">${kelas.namaKelas}</div>
-                        <div class="kelas-count">Wali: ${kelas.waliKelas}</div>
+                        <div class="kelas-meta">
+                            <!-- BUNGKUS TEKS WALI -->
+                            <span class="meta-badge meta-wali">
+                                <i data-lucide="user"></i> Wali: ${kelas.waliKelas}
+                            </span>
+                            <!-- BUNGKUS TEKS JUMLAH SANTRI -->
+                            <span class="meta-badge meta-santri">
+                                <i data-lucide="users"></i> ${kelas.jumlahSantri} Santri
+                            </span>
+                        </div>
                     </div>
-                    <i data-lucide="chevron-right" class="chevron-icon"></i>
+
+                    <div class="kelas-action">
+                        <i data-lucide="chevron-right"></i>
+                    </div>
                 </div>
             `;
         });
@@ -201,6 +235,7 @@ async function loadKelasFromFirebase() {
         console.error("Gagal mengambil data kelas nilai:", error); 
     }
 }
+
 
 window.openNilaiSubMenu = function(kelasId) {
     selectedKelasId = kelasId;

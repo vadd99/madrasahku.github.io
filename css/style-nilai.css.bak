@@ -211,3 +211,8 @@
     width: 20px;
     height: 20px;
 }
+
+/* Memaksa selector hilang jika ada class hidden dari JS */
+.selectors-container.hidden {
+    display: none !important;
+}
