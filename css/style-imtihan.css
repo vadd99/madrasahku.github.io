@@ -92,10 +92,34 @@ body.dark .mapel-card-header {
 
 body.dark .mapel-card-header h4 { color: #fff; }
 
-/* Grid Statistik per Mapel (Disesuaikan untuk Raport) */
+/* BADGE RATA-RATA KELAS (BARU) */
+.badge-rata-kelas {
+    font-size: 0.75rem;
+    background: rgba(99, 102, 241, 0.1); 
+    color: #4f46e5;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+body.dark .badge-rata-kelas {
+    background: rgba(129, 140, 248, 0.1);
+    color: #818cf8;
+    border-color: rgba(129, 140, 248, 0.2);
+}
+
+.badge-rata-kelas strong {
+    margin-left: 4px;
+    font-size: 0.8rem;
+}
+
+/* Grid Statistik per Mapel */
 .imtihan-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* Kolom huruf dibuat agak lebar */
+    grid-template-columns: 1fr 1fr 1fr 1.5fr;
     gap: 10px;
 }
 

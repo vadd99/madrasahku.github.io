@@ -1,3 +1,4 @@
+
 import { db, collection, getDocs, doc, query, where, setDoc } from "./firebase-init.js";
 
 let listKelas = [];
@@ -7,8 +8,11 @@ let activePeriode = "Imtihan 1";
 let selectedKelasId = null;
 let selectedSantriId = null;
 
+// Konfigurasi Bobot Penilaian
+const BOBOT_UH = 0.6; // 60%
+const BOBOT_IMTIHAN = 0.4; // 40%
+
 // Data Master untuk kalkulasi
-// masterData[santriId] = { mapelName: { totalUH, countUH, avgUH, imtihanScore, finalScore } }
 let masterData = {}; 
 
 window.closeGuideBoxImtihan = function() {
@@ -16,14 +20,10 @@ window.closeGuideBoxImtihan = function() {
     if (box) box.style.display = "none";
 };
 
-// ==========================================
-// BAGIAN YANG DIPERBAIKI (INISIALISASI & OBSERVER)
-// ==========================================
 let isInitialized = false;
 function initImtihanView() {
     if (isInitialized) return;
     
-    // Perbaikan: Mencari elemen view-kelas, bukan view-santri
     const viewKelas = document.getElementById("view-kelas");
     if (viewKelas) {
         isInitialized = true;
@@ -40,7 +40,6 @@ if (document.readyState === "loading") {
 }
 document.addEventListener("layoutReady", initImtihanView);
 
-// Perbaikan: Menambahkan pengamat (Observer) untuk menunggu template HTML selesai dimuat
 const observer = new MutationObserver(() => {
     if (document.getElementById("view-kelas") && !isInitialized) {
         initImtihanView();
@@ -48,8 +47,6 @@ const observer = new MutationObserver(() => {
     }
 });
 observer.observe(document.documentElement, { childList: true, subtree: true });
-// ==========================================
-
 
 window.changePeriode = function(val) {
     activePeriode = val;
@@ -64,9 +61,6 @@ async function renderMainView() {
     }
 }
 
-/* ==========================================
-   1. LOAD KELAS (Sama seperti rekap nilai)
-   ========================================== */
 async function loadKelasFromFirebase() {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
@@ -139,9 +133,6 @@ window.goBackToKelasList = function() {
     renderMainView();
 };
 
-/* ==========================================
-   2. LOAD DATA SANTRI & KALKULASI NILAI
-   ========================================== */
 async function loadSantriImtihanList(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
@@ -160,41 +151,35 @@ async function loadSantriImtihanList(kelasId) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     try {
-        // 1. Ambil data Santri
         const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
         listSantri = [];
         santriSnap.forEach(d => listSantri.push({ id: d.id, ...d.data() }));
         listSantri.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
-        // 2. Ambil data Mapel
         const mapelSnap = await getDocs(collection(db, "mapel"));
         listMapel = [];
         mapelSnap.forEach(d => listMapel.push(d.data().nama));
 
-        // 3. Ambil data Nilai UH (rekap_nilai) periode ini
         const qUH = query(collection(db, "rekap_nilai"), where("kelasId", "==", kelasId), where("imtihan", "==", activePeriode));
         const snapUH = await getDocs(qUH);
-        let rawUH = []; // { mapel, dataNilai: { santriId: { UH1: 80, UH2: 90 } } }
+        let rawUH = []; 
         snapUH.forEach(d => rawUH.push(d.data()));
 
-        // 4. Ambil data Nilai Imtihan (rekap_imtihan) periode ini
         const qImtihan = query(collection(db, "rekap_imtihan"), where("kelasId", "==", kelasId), where("imtihan", "==", activePeriode));
         const snapImtihan = await getDocs(qImtihan);
-        let rawImtihan = {}; // rawImtihan[santriId] = { mapelA: 90, mapelB: 85 }
+        let rawImtihan = {}; 
         snapImtihan.forEach(d => {
             const data = d.data();
             rawImtihan[data.santriId] = data.nilaiMapel || {};
         });
 
-        // 5. Olah data ke masterData
         masterData = {};
         listSantri.forEach(santri => {
-            masterData[santri.id] = { mapel: {}, overallFinal: 0 };
+            masterData[santri.id] = { mapel: {}, overallFinal: 0, totalMapelCount: 0, sumAllFinal: 0 };
             let sumFinalAllMapel = 0;
             let countMapelTested = 0;
 
             listMapel.forEach(mapelName => {
-                // Hitung Rata-rata UH
                 let uhData = null;
                 const mapelDoc = rawUH.find(r => r.mapel === mapelName);
                 if (mapelDoc && mapelDoc.dataNilai) {
@@ -210,17 +195,23 @@ async function loadSantriImtihanList(kelasId) {
                     if (countUH > 0) avgUH = sumUH / countUH;
                 }
 
-                // Ambil Nilai Imtihan
                 let imtihanScore = 0;
                 if (rawImtihan[santri.id] && rawImtihan[santri.id][mapelName]) {
                     imtihanScore = parseFloat(rawImtihan[santri.id][mapelName]);
                 }
 
-                // Kalkulasi Nilai Akhir Mapel: (Rata UH + Imtihan) / 2
+                // --- PEMBARUAN LOGIKA KALKULASI NILAI AKHIR (PEMBOBOTAN STANDAR) ---
                 let finalScore = 0;
-                if (countUH > 0 && imtihanScore > 0) finalScore = (avgUH + imtihanScore) / 2;
-                else if (countUH > 0) finalScore = avgUH / 2;
-                else if (imtihanScore > 0) finalScore = imtihanScore / 2;
+                if (countUH > 0 && imtihanScore > 0) {
+                    // Bobot 60% UH, 40% Imtihan
+                    finalScore = (avgUH * BOBOT_UH) + (imtihanScore * BOBOT_IMTIHAN);
+                } else if (countUH > 0) {
+                    // Jika belum ada nilai imtihan, nilai sementara murni dari UH
+                    finalScore = avgUH; 
+                } else if (imtihanScore > 0) {
+                     // Jika tidak ada nilai UH tapi ikut imtihan (kasus jarang)
+                    finalScore = imtihanScore;
+                }
 
                 if (countUH > 0 || imtihanScore > 0) {
                     sumFinalAllMapel += finalScore;
@@ -235,6 +226,10 @@ async function loadSantriImtihanList(kelasId) {
                     finalScore: finalScore
                 };
             });
+
+            // Menyimpan total mapel dan total nilai untuk ditampilkan di rapor
+            masterData[santri.id].totalMapelCount = countMapelTested;
+            masterData[santri.id].sumAllFinal = sumFinalAllMapel;
 
             if (countMapelTested > 0) {
                 masterData[santri.id].overallFinal = sumFinalAllMapel / countMapelTested;
@@ -267,7 +262,7 @@ function renderSantriListDOM() {
                     <div class="santri-info">
                         <div class="santri-name">${santri.nama}</div>
                         <div class="santri-rekap-counters">
-                            <span style="font-size:0.75rem; color:var(--text-muted);">Klik untuk detail mapel</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Klik untuk detail mapel & Rekap Raport</span>
                         </div>
                     </div>
                 </div>
@@ -284,9 +279,29 @@ function renderSantriListDOM() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-/* ==========================================
-   3. MODAL DETAIL IMTIHAN
-   ========================================== */
+// Fungsi helper mengubah angka menjadi huruf
+function terbilang(angka) {
+    if(angka === 0) return 'Nol';
+    
+    // Pembulatan angka ke integer terdekat untuk raport
+    angka = Math.round(angka); 
+    
+    const huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+    let hasil = "";
+
+    if (angka < 12) {
+        hasil = huruf[angka];
+    } else if (angka < 20) {
+        hasil = terbilang(angka - 10) + " Belas";
+    } else if (angka < 100) {
+        hasil = terbilang(Math.floor(angka / 10)) + " Puluh " + terbilang(angka % 10);
+    } else if (angka === 100) {
+        hasil = "Seratus";
+    }
+    
+    return hasil.trim();
+}
+
 window.openModalImtihan = function(santriId) {
     selectedSantriId = santriId;
     const santri = listSantri.find(s => s.id === santriId);
@@ -308,13 +323,31 @@ function renderMapelCards() {
     const container = document.getElementById("mapel-cards-container");
     const dataSantri = masterData[selectedSantriId].mapel;
     
+    // Kategori untuk Raport (berdasarkan gambar)
+    const orderAgama = ['Al-Qur\'an', 'Tajwid', 'Hadits', 'Tauhid', 'Akhlaq', 'Fiqih', 'Tarikh Islam', 'Bahasa Arab', 'Nahwu', 'Shorof'];
+    
     let html = "";
-    listMapel.forEach((mapelName) => {
+    
+    // Sort Mapel, pastikan yang ada di form raport muncul duluan
+    const sortedMapels = listMapel.sort((a, b) => {
+       const indexA = orderAgama.indexOf(a);
+       const indexB = orderAgama.indexOf(b);
+       if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+       if (indexA === -1) return 1;
+       if (indexB === -1) return -1;
+       return indexA - indexB;
+    });
+
+    sortedMapels.forEach((mapelName) => {
         const d = dataSantri[mapelName];
-        // Konversi ID idMapel agar aman dipakai di HTML ID
-        const safeId = mapelName.replace(/[^a-zA-Z0-9]/g, "_");
+        if(!d) return; // Skip if mapel somehow doesn't exist for santri
         
+        const safeId = mapelName.replace(/[^a-zA-Z0-9]/g, "_");
         const valImtihan = d.imtihanScore > 0 ? d.imtihanScore : "";
+        
+        // Pembulatan nilai akhir untuk Raport
+        const finalRounded = Math.round(d.finalScore);
+        const finalHuruf = d.finalScore > 0 ? terbilang(finalRounded) : "-";
         
         html += `
             <div class="mapel-imtihan-card">
@@ -324,15 +357,12 @@ function renderMapelCards() {
                 </div>
                 <div class="imtihan-stats-grid">
                     <div class="stat-box">
-                        <span class="stat-label">Total UH</span>
-                        <span class="stat-value">${d.totalUH}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">Rata UH</span>
+                        <span class="stat-label">Rata UH (60%)</span>
                         <span class="stat-value">${d.avgUH.toFixed(1)}</span>
                     </div>
+                    
                     <div class="stat-box" style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2);">
-                        <span class="stat-label" style="color: #3b82f6;">Nilai Imtihan</span>
+                        <span class="stat-label" style="color: #3b82f6;">Imtihan (40%)</span>
                         <div class="input-imtihan-wrapper">
                             <input type="number" 
                                    id="input-imtihan-${safeId}" 
@@ -343,37 +373,68 @@ function renderMapelCards() {
                                    onchange="recalculateMapel('${mapelName}', '${safeId}')">
                         </div>
                     </div>
+                    
                     <div class="stat-box highlight">
-                        <span class="stat-label" style="color: #10b981;">Nilai Akhir</span>
-                        <span class="stat-value highlight-text" id="final-score-${safeId}">${d.finalScore.toFixed(1)}</span>
+                        <span class="stat-label" style="color: #10b981;">Nilai Raport (Angka)</span>
+                        <span class="stat-value highlight-text" id="final-score-${safeId}">${finalRounded}</span>
+                    </div>
+                    
+                    <div class="stat-box highlight-huruf">
+                        <span class="stat-label" style="color: #d97706;">Nilai Raport (Huruf)</span>
+                        <span class="stat-value-sm highlight-text-huruf" id="final-huruf-${safeId}">${finalHuruf}</span>
                     </div>
                 </div>
             </div>
         `;
     });
     
+    // Tambahan Bagian Rekap Bawah Raport
+    html += `
+        <div class="raport-summary-card">
+            <h4><i data-lucide="clipboard-list"></i> Data untuk Bagian Bawah Raport</h4>
+            <div class="summary-flex">
+                <div class="sum-item">
+                    <span class="sum-label">Jumlah Nilai</span>
+                    <span class="sum-val" id="raport-jumlah-nilai">0</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Rata-rata</span>
+                    <span class="sum-val" id="raport-rata-rata">0</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
     container.innerHTML = html;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// Fungsi dinamis saat nilai diketik
 window.recalculateMapel = function(mapelName, safeId) {
     const inputEl = document.getElementById(`input-imtihan-${safeId}`);
     const finalEl = document.getElementById(`final-score-${safeId}`);
+    const hurufEl = document.getElementById(`final-huruf-${safeId}`);
     
     let imtihanVal = parseFloat(inputEl.value) || 0;
     const d = masterData[selectedSantriId].mapel[mapelName];
     
-    // Update data memori
     d.imtihanScore = imtihanVal;
     
-    // Hitung ulang Final Score (Rata UH + Imtihan) / 2
-    if (d.countUH > 0 && imtihanVal > 0) d.finalScore = (d.avgUH + imtihanVal) / 2;
-    else if (d.countUH > 0) d.finalScore = d.avgUH / 2;
-    else if (imtihanVal > 0) d.finalScore = imtihanVal / 2;
-    else d.finalScore = 0;
+    // Kalkulasi pembobotan ulang
+    if (d.countUH > 0 && imtihanVal > 0) {
+        d.finalScore = (d.avgUH * BOBOT_UH) + (imtihanVal * BOBOT_IMTIHAN);
+    } else if (d.countUH > 0) {
+        d.finalScore = d.avgUH; 
+    } else if (imtihanVal > 0) {
+        d.finalScore = imtihanVal;
+    } else {
+        d.finalScore = 0;
+    }
     
-    finalEl.innerText = d.finalScore.toFixed(1);
+    const finalRounded = Math.round(d.finalScore);
+    
+    finalEl.innerText = finalRounded;
+    hurufEl.innerText = d.finalScore > 0 ? terbilang(finalRounded) : "-";
+    
     updateGrandTotalUI();
 };
 
@@ -385,7 +446,8 @@ function updateGrandTotalUI() {
     Object.keys(dataSantri).forEach(mapelName => {
         const d = dataSantri[mapelName];
         if (d.countUH > 0 || d.imtihanScore > 0) {
-            sumFinal += d.finalScore;
+            // Untuk jumlah nilai raport pakai angka bulat
+            sumFinal += Math.round(d.finalScore);
             countActiveMapel++;
         }
     });
@@ -393,13 +455,20 @@ function updateGrandTotalUI() {
     let overall = 0;
     if (countActiveMapel > 0) overall = sumFinal / countActiveMapel;
     
+    masterData[selectedSantriId].sumAllFinal = sumFinal;
     masterData[selectedSantriId].overallFinal = overall;
-    document.getElementById("grand-total-value").innerText = overall.toFixed(2);
+    
+    // Update UI Header
+    document.getElementById("grand-total-value").innerText = overall.toFixed(1);
+    
+    // Update UI Rekap Bawah Raport (jika ada di DOM)
+    const sumTotalEl = document.getElementById("raport-jumlah-nilai");
+    const avgTotalEl = document.getElementById("raport-rata-rata");
+    
+    if(sumTotalEl) sumTotalEl.innerText = sumFinal;
+    if(avgTotalEl) avgTotalEl.innerText = overall.toFixed(1);
 }
 
-/* ==========================================
-   4. SIMPAN KE FIREBASE
-   ========================================== */
 window.simpanNilaiImtihan = async function() {
     const btnSave = document.getElementById("btn-save-imtihan");
     const originalContent = btnSave.innerHTML;
@@ -409,7 +478,6 @@ window.simpanNilaiImtihan = async function() {
         btnSave.disabled = true;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Siapkan payload (hanya menyimpan inputan imtihan)
         let nilaiMapelToSave = {};
         const dataMapel = masterData[selectedSantriId].mapel;
         Object.keys(dataMapel).forEach(mapel => {
@@ -427,10 +495,7 @@ window.simpanNilaiImtihan = async function() {
             updatedAt: new Date()
         };
 
-        // Simpan menggunakan setDoc (Update atau Create otomatis berdasarkan docId)
         await setDoc(doc(db, "rekap_imtihan", docId), payload);
-
-        // Update UI List di background agar rata-ratanya ikut terupdate
         renderSantriListDOM();
 
         closeModalImtihan();

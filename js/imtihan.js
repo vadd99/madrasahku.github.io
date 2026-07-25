@@ -14,6 +14,7 @@ const BOBOT_IMTIHAN = 0.4; // 40%
 
 // Data Master untuk kalkulasi
 let masterData = {}; 
+let classAverages = {}; // NEW: Menyimpan rata-rata kelas per mapel
 
 window.closeGuideBoxImtihan = function() {
     const box = document.getElementById("guide-box-imtihan");
@@ -200,16 +201,12 @@ async function loadSantriImtihanList(kelasId) {
                     imtihanScore = parseFloat(rawImtihan[santri.id][mapelName]);
                 }
 
-                // --- PEMBARUAN LOGIKA KALKULASI NILAI AKHIR (PEMBOBOTAN STANDAR) ---
                 let finalScore = 0;
                 if (countUH > 0 && imtihanScore > 0) {
-                    // Bobot 60% UH, 40% Imtihan
                     finalScore = (avgUH * BOBOT_UH) + (imtihanScore * BOBOT_IMTIHAN);
                 } else if (countUH > 0) {
-                    // Jika belum ada nilai imtihan, nilai sementara murni dari UH
                     finalScore = avgUH; 
                 } else if (imtihanScore > 0) {
-                     // Jika tidak ada nilai UH tapi ikut imtihan (kasus jarang)
                     finalScore = imtihanScore;
                 }
 
@@ -227,13 +224,31 @@ async function loadSantriImtihanList(kelasId) {
                 };
             });
 
-            // Menyimpan total mapel dan total nilai untuk ditampilkan di rapor
             masterData[santri.id].totalMapelCount = countMapelTested;
             masterData[santri.id].sumAllFinal = sumFinalAllMapel;
 
             if (countMapelTested > 0) {
                 masterData[santri.id].overallFinal = sumFinalAllMapel / countMapelTested;
             }
+        });
+
+        // --- NEW: Hitung Rata-rata Kelas per Mapel ---
+        classAverages = {};
+        listMapel.forEach(mapelName => {
+            let sumMapel = 0;
+            let countSantri = 0;
+            
+            listSantri.forEach(santri => {
+                const d = masterData[santri.id].mapel[mapelName];
+                // Hitung jika ada nilai yang valid
+                if (d && (d.countUH > 0 || d.imtihanScore > 0)) {
+                    sumMapel += Math.round(d.finalScore); // Gunakan pembulatan sesuai raport
+                    countSantri++;
+                }
+            });
+            
+            // Hitung rata-rata, bulatkan ke integer terdekat
+            classAverages[mapelName] = countSantri > 0 ? Math.round(sumMapel / countSantri) : 0;
         });
 
         renderSantriListDOM();
@@ -279,13 +294,9 @@ function renderSantriListDOM() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// Fungsi helper mengubah angka menjadi huruf
 function terbilang(angka) {
     if(angka === 0) return 'Nol';
-    
-    // Pembulatan angka ke integer terdekat untuk raport
     angka = Math.round(angka); 
-    
     const huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
     let hasil = "";
 
@@ -298,7 +309,6 @@ function terbilang(angka) {
     } else if (angka === 100) {
         hasil = "Seratus";
     }
-    
     return hasil.trim();
 }
 
@@ -323,12 +333,9 @@ function renderMapelCards() {
     const container = document.getElementById("mapel-cards-container");
     const dataSantri = masterData[selectedSantriId].mapel;
     
-    // Kategori untuk Raport (berdasarkan gambar)
     const orderAgama = ['Al-Qur\'an', 'Tajwid', 'Hadits', 'Tauhid', 'Akhlaq', 'Fiqih', 'Tarikh Islam', 'Bahasa Arab', 'Nahwu', 'Shorof'];
-    
     let html = "";
     
-    // Sort Mapel, pastikan yang ada di form raport muncul duluan
     const sortedMapels = listMapel.sort((a, b) => {
        const indexA = orderAgama.indexOf(a);
        const indexB = orderAgama.indexOf(b);
@@ -340,20 +347,25 @@ function renderMapelCards() {
 
     sortedMapels.forEach((mapelName) => {
         const d = dataSantri[mapelName];
-        if(!d) return; // Skip if mapel somehow doesn't exist for santri
+        if(!d) return; 
         
         const safeId = mapelName.replace(/[^a-zA-Z0-9]/g, "_");
         const valImtihan = d.imtihanScore > 0 ? d.imtihanScore : "";
         
-        // Pembulatan nilai akhir untuk Raport
         const finalRounded = Math.round(d.finalScore);
         const finalHuruf = d.finalScore > 0 ? terbilang(finalRounded) : "-";
+        
+        // --- NEW: Ambil Data Rata-rata Kelas ---
+        const rataKelas = classAverages[mapelName] || 0;
         
         html += `
             <div class="mapel-imtihan-card">
                 <div class="mapel-card-header">
                     <i data-lucide="book" style="color:#64748b;"></i>
                     <h4>${mapelName}</h4>
+                    <div class="badge-rata-kelas" title="Rata-rata Mapel di Kelas ini">
+                        Rata-rata Kelas: <strong>${rataKelas}</strong>
+                    </div>
                 </div>
                 <div class="imtihan-stats-grid">
                     <div class="stat-box">
@@ -388,7 +400,6 @@ function renderMapelCards() {
         `;
     });
     
-    // Tambahan Bagian Rekap Bawah Raport
     html += `
         <div class="raport-summary-card">
             <h4><i data-lucide="clipboard-list"></i> Data untuk Bagian Bawah Raport</h4>
@@ -419,7 +430,6 @@ window.recalculateMapel = function(mapelName, safeId) {
     
     d.imtihanScore = imtihanVal;
     
-    // Kalkulasi pembobotan ulang
     if (d.countUH > 0 && imtihanVal > 0) {
         d.finalScore = (d.avgUH * BOBOT_UH) + (imtihanVal * BOBOT_IMTIHAN);
     } else if (d.countUH > 0) {
@@ -446,7 +456,6 @@ function updateGrandTotalUI() {
     Object.keys(dataSantri).forEach(mapelName => {
         const d = dataSantri[mapelName];
         if (d.countUH > 0 || d.imtihanScore > 0) {
-            // Untuk jumlah nilai raport pakai angka bulat
             sumFinal += Math.round(d.finalScore);
             countActiveMapel++;
         }
@@ -458,10 +467,8 @@ function updateGrandTotalUI() {
     masterData[selectedSantriId].sumAllFinal = sumFinal;
     masterData[selectedSantriId].overallFinal = overall;
     
-    // Update UI Header
     document.getElementById("grand-total-value").innerText = overall.toFixed(1);
     
-    // Update UI Rekap Bawah Raport (jika ada di DOM)
     const sumTotalEl = document.getElementById("raport-jumlah-nilai");
     const avgTotalEl = document.getElementById("raport-rata-rata");
     
