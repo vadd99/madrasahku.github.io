@@ -19,8 +19,10 @@
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden; /* Mencegah geser kanan tak sengaja */
     min-height: 0; 
     position: relative;
+    box-sizing: border-box;
 }
 
 /* =========================================================
@@ -129,6 +131,7 @@ body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
     border-radius: 10px;
     padding: 10px 14px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
 }
 
 body.dark .action-btn-wrapper {
@@ -165,19 +168,21 @@ body.dark .action-btn-wrapper {
 
 
 /* =========================================================
-   PERBAIKAN GRID & CARD KELAS AGAR RAPI KIRI-KANAN
+   PERBAIKAN STRUKTUR CARD KELAS (DIJAMIN RATA KIRI)
    ========================================================= */
 .kelas-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex; /* Ubah dari grid ke flex-column agar lebih terkontrol lebarnya */
+    flex-direction: column;
     gap: 14px;
     padding-bottom: 20px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .kelas-card-item {
     display: flex;
-    align-items: center;
+    align-items: center; /* Sumbu Y (Vertikal) rata tengah */
+    justify-content: flex-start; /* Sumbu X (Horizontal) dipaksa mulai dari kiri */
     background: #ffffff; 
     border: 1px solid #e2e8f0;
     border-radius: 14px;
@@ -186,7 +191,7 @@ body.dark .action-btn-wrapper {
     transition: all 0.3s ease;
     gap: 16px;
     width: 100%;
-    box-sizing: border-box; /* Memastikan padding tidak membuat card melebar keluar container */
+    box-sizing: border-box; /* Memastikan padding tidak membuat elemen melebar melampaui layar */
 }
 
 body.dark .kelas-card-item {
@@ -220,22 +225,21 @@ body.dark .kelas-card-item:hover {
 }
 .kelas-icon-wrapper i { width: 26px; height: 26px; }
 
-/* Mengatur area informasi agar mengisi sisa ruang secara rapi dan rata kiri */
+/* Menggunakan 'block' dibanding 'flex' untuk memastikan rata kiri maksimal */
 .kelas-info { 
     flex: 1; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-start; /* Memastikan isi di dalam info rata kiri */
-    gap: 8px; 
+    display: block; 
     min-width: 0; 
+    text-align: left !important;
 }
 
 .kelas-name {
     font-size: 1.15rem; 
     font-weight: 700; 
     color: #1e293b; 
-    margin: 0; 
-    text-align: left;
+    margin: 0 0 8px 0; /* Memberikan jarak ke badge bawahnya */
+    text-align: left !important;
+    display: block;
     width: 100%;
     white-space: nowrap; 
     overflow: hidden; 
@@ -247,8 +251,8 @@ body.dark .kelas-name { color: #ffffff; }
     display: flex; 
     flex-wrap: wrap; 
     gap: 8px; 
-    width: 100%;
-    justify-content: flex-start; /* Meratakan badge ke sisi kiri */
+    justify-content: flex-start !important; /* Memaksa badge rata ke kiri */
+    align-items: center;
 }
 
 .meta-badge {
@@ -269,6 +273,7 @@ body.dark .meta-wali { color: #38bdf8; }
 .meta-santri { background: rgba(244, 63, 94, 0.15); color: #e11d48; border: 1px solid rgba(244, 63, 94, 0.3); }
 body.dark .meta-santri { color: #f43f5e; }
 
+/* Ini kunci utamanya: margin-left: auto akan memojokkan panah kuat-kuat ke sisi kanan */
 .kelas-action {
     display: flex; 
     align-items: center; 
@@ -279,7 +284,8 @@ body.dark .meta-santri { color: #f43f5e; }
     width: 32px; 
     height: 32px; 
     border-radius: 50%;
-    flex-shrink: 0; /* Mengecilkan risiko tombol panah terdorong keluar */
+    margin-left: auto; /* Mendorong tombol ke ujung kanan */
+    flex-shrink: 0;
 }
 body.dark .kelas-action { color: #94a3b8; background: rgba(255, 255, 255, 0.05); }
 .kelas-card-item:hover .kelas-action { color: #ffffff; background: #10b981; transform: translateX(3px); }
@@ -429,29 +435,83 @@ body.dark .stat-wali .stat-pill-icon { color: #cbd5e1; }
 
 
 /* =========================================================
-   LIST SANTRI (MENGGUNAKAN TEMA ABSENSI/NILAI)
+   PERBAIKAN LIST SANTRI AGAR TETAP RAPI (TEMA ABSENSI/NILAI)
    ========================================================= */
 .santri-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .santri-card-item { 
-    display: flex; align-items: center; justify-content: space-between; 
-    background-color: var(--bg-main); border: 1px solid var(--border-color); 
-    border-radius: var(--radius-md); padding: 12px 16px; cursor: pointer; transition: var(--transition); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    background-color: var(--bg-main); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-md); 
+    padding: 12px 16px; 
+    cursor: pointer; 
+    transition: var(--transition); 
+    width: 100%;
+    box-sizing: border-box;
 }
 .santri-card-item:hover { border-color: var(--primary-border); transform: translateX(3px); }
 
-.santri-card-left { display: flex; align-items: center; gap: 12px; }
-.santri-name { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
-.santri-rekap-counters { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.rekap-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--text-light); border: 1px solid var(--border-color); }
+.santri-card-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+}
+
+.santri-info {
+    text-align: left;
+    display: block;
+    min-width: 0;
+}
+
+.santri-name { 
+    font-size: 0.92rem; 
+    font-weight: 700; 
+    color: var(--text-main); 
+    text-align: left !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.santri-rekap-counters { 
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start;
+    gap: 8px; 
+    margin-top: 4px; 
+}
+
+.rekap-pill { 
+    font-size: 0.7rem; 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    background: rgba(255, 255, 255, 0.05); 
+    color: var(--text-light); 
+    border: 1px solid var(--border-color); 
+}
 body:not(.dark) .rekap-pill { background: #f1f5f9; color: #475569; }
 
-.santri-card-right { display: flex; align-items: center; gap: 10px; }
+.santri-card-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
 .chevron-icon { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
 
 .number-badge {
