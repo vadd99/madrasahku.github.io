@@ -18,13 +18,6 @@ let todayAttendance = {};
 let initialAttendance = {}; 
 let rekapAttendance = {}; 
 let todayAbsensiDocId = null; 
-// --- FUNGSI UNTUK MENUTUP PANDUAN ABSENSI ---
-window.closeGuideBox = function() {
-    const box = document.getElementById("guide-box-absensi");
-    if (box) {
-        box.style.display = "none";
-    }
-};
 
 // --- PENANGANAN INISIALISASI AMAN ---
 function initAbsensiView() {

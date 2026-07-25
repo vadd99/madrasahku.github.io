@@ -298,32 +298,9 @@ body.dark .kelas-action { color: #94a3b8; background: rgba(255, 255, 255, 0.05);
     display: flex; align-items: flex-start; gap: 12px; 
     background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); 
     border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; color: var(--text-main); 
-    position: relative; /* Tambahan agar tombol X posisinya presisi */
-    padding-right: 40px; /* Tambahan ruang agar teks tidak tertutup tombol X */
 }
 .guide-icon { color: #10b981; display: flex; margin-top: 2px; }
 .guide-text p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
-
-/* Tambahan styling tombol close (X) Panduan */
-.btn-close-guide {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-}
-.btn-close-guide:hover {
-    background: rgba(239, 68, 68, 0.15); 
-    color: #ef4444; /* Berubah merah saat disentuh */
-}
 
 .absensi-list-grid { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
 .absensi-santri-card { 
