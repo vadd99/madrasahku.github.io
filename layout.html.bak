@@ -38,10 +38,6 @@
                 <i data-lucide="award" class="w-5 h-5"></i>
                 <span>Rekap Nilai Imtihan</span>
             </a>
-            <a href="raport.html" class="nav-item" data-path="raport.html">
-                <i data-lucide="book-open" class="w-5 h-5"></i>
-                <span>Buku Induk Raport</span>
-            </a>
         </nav>
 
         <div class="sidebar-footer">
