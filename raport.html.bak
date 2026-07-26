@@ -8,10 +8,6 @@
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
-    <link rel="stylesheet" href="css/style-absensi.css">
-    <link rel="stylesheet" href="css/style-rekap.css">
-    <link rel="stylesheet" href="css/style-nilai.css">
-
     <link rel="stylesheet" href="css/style-raport.css"> <!-- CSS Khusus Raport -->
 
     <script src="https://unpkg.com/lucide@latest"></script>
