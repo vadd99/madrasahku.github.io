@@ -3,39 +3,39 @@
    STYLE KHUSUS BUKU INDUK RAPORT (TABLE VIEW)
    ========================================================= */
 
-.raport-page-container {
-    padding: 15px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
+/* Warna Icon Header */
 .header-icon-wrapper.raport-icon {
     background: rgba(16, 185, 129, 0.15); /* Emerald/Hijau Raport */
     color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.raport-content-card {
+/* CARD SELECTOR & EXPORT (Agar Rapi dan Sejajar) */
+.raport-selector-card {
     background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    padding: 20px;
-    margin-top: 15px;
-    min-height: 60vh;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
-body.dark .raport-content-card {
+body.dark .raport-selector-card {
     background: var(--bg-card);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-    border: 1px solid var(--border-color);
+    border-color: var(--border-color);
 }
 
-/* KELAS GRID (Menggunakan style bawaan absensi/rekap) */
-.kelas-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
+.selector-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
 }
+
 
 /* =======================================
    STYLING TABEL EXCEL-LIKE
@@ -43,7 +43,7 @@ body.dark .raport-content-card {
 .table-responsive-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 70vh; /* Agar header lengket bisa berfungsi */
+    max-height: 65vh; /* Membatasi tinggi agar header tabel bisa sticky & halaman bisa di-scroll */
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     background: #fff;
@@ -58,9 +58,9 @@ body.dark .table-responsive-wrapper {
 
 .tabel-raport {
     width: 100%;
-    border-collapse: separate; /* Required for sticky borders */
+    border-collapse: separate; 
     border-spacing: 0;
-    min-width: 1200px; /* Force table to be wide */
+    min-width: 1200px; 
     font-size: 0.85rem;
 }
 
@@ -99,7 +99,7 @@ body.dark .tabel-raport thead tr:nth-child(2) th {
     color: #94a3b8;
 }
 
-/* Pewarnaan Khusus Group Header (Mirip Excel mu) */
+/* Pewarnaan Khusus Group Header (Mirip Excel) */
 .tabel-raport thead th.group-mapel {
     background-color: #e0f2fe; /* Biru muda */
     border-bottom: 1px solid #bae6fd;
@@ -209,7 +209,6 @@ body.dark .tabel-raport tbody tr:hover .col-no,
 body.dark .tabel-raport tbody tr:hover .col-nama {
     background-color: #1e293b !important;
 }
-
 
 /* Teks Rata Kiri/Kanan spesifik */
 .text-left { text-align: left !important; }
