@@ -45,8 +45,8 @@
                     </div>
                 </div>
 
-                <!-- Selector Periode & Tombol Export (Dibuat hidden di awal) -->
-                <div id="raport-selectors" class="selectors-container raport-flex-container hidden">
+                <!-- Selector Periode & Tombol Export -->
+                <div id="raport-selectors" class="selectors-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
                     
                     <div class="raport-selector-card" style="flex: 1; min-width: 200px;">
                         <label for="select-periode-raport" class="selector-label">
@@ -58,9 +58,8 @@
                         </select>
                     </div>
 
-                    <div id="export-container" class="raport-selector-card" style="flex: 0 1 auto; justify-content: flex-end; padding: 10px 15px;">
-                        <!-- Class tombol diubah menjadi btn-export agar style khusus bekerja -->
-                        <button class="btn btn-export" onclick="exportToExcel()" style="height: 100%; min-height: 38px; padding: 0 20px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                    <div id="export-container" class="hidden raport-selector-card" style="flex: 0 1 auto; justify-content: flex-end; padding: 10px 15px;">
+                        <button class="btn btn-save-active" onclick="exportToExcel()" style="height: 100%; min-height: 38px; padding: 0 20px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="download" style="width: 18px; height: 18px;"></i> Export Excel
                         </button>
                     </div>

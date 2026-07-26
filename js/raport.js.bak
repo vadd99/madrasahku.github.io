@@ -1,3 +1,4 @@
+
 import { db, collection, getDocs, query, where } from "./firebase-init.js";
 
 let listKelas = [];
@@ -82,7 +83,6 @@ async function loadKelasFromFirebase() {
     const emptyState = document.getElementById("empty-state-kelas");
     const gridContainer = document.getElementById("kelas-grid-container");
     const btnBack = document.getElementById("btn-back-kelas");
-    const selectorPeriode = document.getElementById("raport-selectors"); // Elemen Selector Periode
 
     if (!viewTabel || !gridContainer) return;
 
@@ -90,7 +90,6 @@ async function loadKelasFromFirebase() {
     if (exportBtn) exportBtn.classList.add("hidden");
     if (viewKelas) viewKelas.classList.remove("hidden");
     if (viewTabel) viewTabel.classList.add("hidden");
-    if (selectorPeriode) selectorPeriode.classList.add("hidden"); // Sembunyikan Pilihan Periode
     
     document.getElementById("page-title").innerText = "Buku Induk Raport";
     document.getElementById("page-subtitle").innerText = "Pilih kelas untuk melihat rekapitulasi nilai dalam bentuk tabel.";
@@ -159,13 +158,11 @@ async function loadSantriRaportList(kelasId) {
     const btnBack = document.getElementById("btn-back-kelas");
     const loadingState = document.getElementById("loading-state");
     const tabelContainer = document.getElementById("tabel-container");
-    const selectorPeriode = document.getElementById("raport-selectors"); // Elemen Selector Periode
 
     if (viewKelas) viewKelas.classList.add("hidden");
     if (viewTabel) viewTabel.classList.remove("hidden");
     if (btnBack) btnBack.classList.remove("hidden");
     if (exportBtn) exportBtn.classList.add("hidden"); 
-    if (selectorPeriode) selectorPeriode.classList.remove("hidden"); // Tampilkan Pilihan Periode
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Induk Raport - ${selectedKelasData.namaKelas}`;
