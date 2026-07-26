@@ -60,7 +60,8 @@ body.dark .table-responsive-wrapper {
     width: 100%;
     border-collapse: separate; 
     border-spacing: 0;
-    min-width: 1200px; 
+    /* Ditingkatkan dari 1200px menjadi 2800px karena kolom bertambah drastis */
+    min-width: 2800px; 
     font-size: 0.85rem;
 }
 
@@ -89,6 +90,12 @@ body.dark .table-responsive-wrapper {
     z-index: 9;
 }
 
+/* Gaya khusus label UH agar lebih hemat space jika layar sempit */
+.tabel-raport thead tr:nth-child(2) th.col-uh {
+    color: #64748b;
+    font-weight: 600;
+}
+
 body.dark .tabel-raport thead th {
     background-color: #1e293b;
     color: #f8fafc;
@@ -97,6 +104,9 @@ body.dark .tabel-raport thead th {
 body.dark .tabel-raport thead tr:nth-child(2) th {
     background-color: #0f172a;
     color: #94a3b8;
+}
+body.dark .tabel-raport thead tr:nth-child(2) th.col-uh {
+    color: #64748b;
 }
 
 /* Pewarnaan Khusus Group Header (Mirip Excel) */
@@ -119,12 +129,22 @@ body.dark .tabel-raport thead th.group-rekap { background-color: rgba(234, 179, 
     border-right: 1px solid #e2e8f0;
     border-bottom: 1px solid #e2e8f0;
     color: #334155;
+    white-space: nowrap; /* Mencegah teks turun ke bawah dan menggencet tabel */
+}
+
+/* Gaya sel untuk nilai UH mentah (agak redup supaya nilai Rata/Akhir lebih menonjol) */
+.tabel-raport tbody td.val-uh {
+    color: #64748b; 
 }
 
 body.dark .tabel-raport tbody td {
     border-color: #334155;
     color: #cbd5e1;
 }
+body.dark .tabel-raport tbody td.val-uh {
+    color: #94a3b8; 
+}
+
 
 /* Alternate Row Color */
 .tabel-raport tbody tr:nth-child(even) td {

@@ -145,7 +145,7 @@ async function loadSantriRaportList(kelasId) {
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Induk Raport - ${selectedKelasData.namaKelas}`;
-    document.getElementById("page-subtitle").innerText = "Tabel Rekapitulasi Rata-rata UH, Imtihan, dan Nilai Raport Akhir.";
+    document.getElementById("page-subtitle").innerText = "Tabel Rekapitulasi Rincian UH, Rata-rata, Imtihan, dan Nilai Raport Akhir.";
 
     loadingState.classList.remove("hidden");
     tabelContainer.innerHTML = "";
@@ -196,10 +196,18 @@ async function loadSantriRaportList(kelasId) {
                 if (mapelDoc && mapelDoc.dataNilai) uhData = mapelDoc.dataNilai[santri.id];
                 
                 let sumUH = 0, countUH = 0, avgUH = 0;
+                let valUH = ["-", "-", "-"]; // Array untuk menyimpan UH1, UH2, UH3
+
                 if (uhData) {
-                    Object.values(uhData).forEach(val => {
-                        let num = parseFloat(val);
-                        if (!isNaN(num)) { sumUH += num; countUH++; }
+                    // Sort keys agar urutan UH 1, 2, 3 konsisten
+                    const keys = Object.keys(uhData).sort(); 
+                    keys.forEach((k, index) => {
+                        let num = parseFloat(uhData[k]);
+                        if (!isNaN(num)) { 
+                            sumUH += num; 
+                            countUH++; 
+                            if(index < 3) valUH[index] = num; // Ambil maksimal 3 UH pertama
+                        }
                     });
                     if (countUH > 0) avgUH = sumUH / countUH;
                 }
@@ -224,6 +232,7 @@ async function loadSantriRaportList(kelasId) {
                 }
 
                 masterData[santri.id].mapel[mapelName] = {
+                    uh: valUH,
                     avgUH: avgUH,
                     imtihanScore: imtihanScore,
                     finalScore: Math.round(finalScore) // Bulatkan untuk raport
@@ -236,9 +245,9 @@ async function loadSantriRaportList(kelasId) {
             }
         });
 
-        // Hitung Rata-rata Kelas per Kolom
+        // Hitung Rata-rata Kelas per Kolom (Hanya untuk nilai Raport Akhir per Mapel)
         classAverages = {
-            mapel: {}, // Rata-rata finalScore per mapel
+            mapel: {}, 
             overallSum: 0,
             overallAvg: 0
         };
@@ -296,10 +305,10 @@ function renderTabelRaport() {
         <th rowspan="2" class="col-nama">Nama Santri</th>`;
     let theadHtml2 = `<tr>`;
     
-    // Header Mapel
+    // Header Mapel (Sekarang colspan 6 karena tambah UH1, UH2, UH3)
     listMapel.forEach(mapel => {
-        theadHtml1 += `<th colspan="3" class="group-mapel">${mapel}</th>`;
-        theadHtml2 += `<th>Rata UH</th><th>Imtihan</th><th>Raport</th>`;
+        theadHtml1 += `<th colspan="6" class="group-mapel">${mapel}</th>`;
+        theadHtml2 += `<th class="col-uh">UH 1</th><th class="col-uh">UH 2</th><th class="col-uh">UH 3</th><th class="col-avg">Rata UH</th><th class="col-im">Imtihan</th><th class="col-rp">Raport</th>`;
     });
     
     // Header Grand Total
@@ -315,11 +324,15 @@ function renderTabelRaport() {
             
         listMapel.forEach(mapel => {
             const d = masterData[santri.id].mapel[mapel];
+            const uh1 = d.uh[0];
+            const uh2 = d.uh[1];
+            const uh3 = d.uh[2];
             const u = d.avgUH > 0 ? d.avgUH.toFixed(1) : "-";
             const i = d.imtihanScore > 0 ? d.imtihanScore : "-";
             const r = d.finalScore > 0 ? d.finalScore : "-";
             
-            tbodyHtml += `<td class="text-blue">${u}</td><td>${i}</td><td class="text-green">${r}</td>`;
+            // Insert 6 kolom data
+            tbodyHtml += `<td class="val-uh">${uh1}</td><td class="val-uh">${uh2}</td><td class="val-uh">${uh3}</td><td class="text-blue">${u}</td><td>${i}</td><td class="text-green">${r}</td>`;
         });
         
         const sum = masterData[santri.id].sumAllFinal;
@@ -335,7 +348,8 @@ function renderTabelRaport() {
         
     listMapel.forEach(mapel => {
         const rataStr = classAverages.mapel[mapel] > 0 ? classAverages.mapel[mapel] : "-";
-        tfootHtml += `<th>-</th><th>-</th><th>${rataStr}</th>`; // Kolom UH dan Imtihan dikosongkan (bisa diisi jika mau dihitung)
+        // Ada 6 kolom: UH1, UH2, UH3, RataUH, Imtihan, (Raport)
+        tfootHtml += `<th>-</th><th>-</th><th>-</th><th>-</th><th>-</th><th>${rataStr}</th>`; 
     });
     
     tfootHtml += `<th>${classAverages.overallSum > 0 ? classAverages.overallSum : "-"}</th>
