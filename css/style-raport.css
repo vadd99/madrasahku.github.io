@@ -5,7 +5,7 @@
 
 /* Warna Icon Header */
 .header-icon-wrapper.raport-icon {
-    background: rgba(16, 185, 129, 0.15); /* Emerald/Hijau Raport */
+    background: rgba(16, 185, 129, 0.15); 
     color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
@@ -60,7 +60,6 @@ body.dark .table-responsive-wrapper {
     width: 100%;
     border-collapse: separate; 
     border-spacing: 0;
-    /* Ditingkatkan dari 1200px menjadi 2800px karena kolom bertambah drastis */
     min-width: 2800px; 
     font-size: 0.85rem;
 }
@@ -129,10 +128,10 @@ body.dark .tabel-raport thead th.group-rekap { background-color: rgba(234, 179, 
     border-right: 1px solid #e2e8f0;
     border-bottom: 1px solid #e2e8f0;
     color: #334155;
-    white-space: nowrap; /* Mencegah teks turun ke bawah dan menggencet tabel */
+    white-space: nowrap; 
 }
 
-/* Gaya sel untuk nilai UH mentah (agak redup supaya nilai Rata/Akhir lebih menonjol) */
+/* Gaya sel untuk nilai UH mentah */
 .tabel-raport tbody td.val-uh {
     color: #64748b; 
 }
@@ -185,11 +184,10 @@ body.dark .tabel-raport tfoot th {
 /* =======================================
    STICKY COLUMN (KOLOM KIRI TETAP DIAM)
    ======================================= */
-/* No */
 .tabel-raport .col-no {
     position: sticky;
     left: 0;
-    z-index: 20 !important; /* Di atas th biasa */
+    z-index: 20 !important;
     background-color: #fff;
     width: 40px;
     min-width: 40px;
@@ -197,21 +195,19 @@ body.dark .tabel-raport tfoot th {
 .tabel-raport thead .col-no { background-color: #f1f5f9; }
 .tabel-raport tfoot .col-no { background-color: #e2e8f0; }
 
-/* Nama Santri */
 .tabel-raport .col-nama {
     position: sticky;
-    left: 40px; /* Lebar kolom No */
+    left: 40px;
     z-index: 20 !important;
     background-color: #fff;
     text-align: left !important;
     min-width: 150px;
     font-weight: 600;
-    border-right: 2px solid #94a3b8 !important; /* Garis batas tegas */
+    border-right: 2px solid #94a3b8 !important; 
 }
 .tabel-raport thead .col-nama { background-color: #f1f5f9; }
 .tabel-raport tfoot .col-nama { background-color: #e2e8f0; text-align: right !important; padding-right: 15px;}
 
-/* Dark Mode Penyesuaian Sticky */
 body.dark .tabel-raport .col-no,
 body.dark .tabel-raport .col-nama {
     background-color: #0f172a;
@@ -223,16 +219,75 @@ body.dark .tabel-raport tfoot .col-no,
 body.dark .tabel-raport tfoot .col-nama { background-color: #1e293b; }
 body.dark .tabel-raport tbody tr:nth-child(even) .col-no,
 body.dark .tabel-raport tbody tr:nth-child(even) .col-nama {
-    background-color: #162032; /* Sedikit beda untuk belang-belang */
+    background-color: #162032;
 }
 body.dark .tabel-raport tbody tr:hover .col-no,
 body.dark .tabel-raport tbody tr:hover .col-nama {
     background-color: #1e293b !important;
 }
 
-/* Teks Rata Kiri/Kanan spesifik */
 .text-left { text-align: left !important; }
 .text-right { text-align: right !important; }
 .text-bold { font-weight: bold; }
 .text-green { color: #10b981; font-weight: bold; }
 .text-blue { color: #3b82f6; }
+
+
+/* =======================================
+   FULL SCREEN MODE STYLES
+   ======================================= */
+.fs-active {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    z-index: 99999 !important;
+    background: rgba(241, 245, 249, 0.95); /* Latar belakang blur terang */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    padding: 60px 15px 15px 15px; 
+    box-sizing: border-box;
+}
+
+body.dark .fs-active {
+    background: rgba(3, 7, 18, 0.95); /* Latar belakang blur gelap */
+}
+
+/* Memperbesar batas tabel saat Full Screen */
+.fs-active .table-responsive-wrapper {
+    flex: 1;
+    max-height: none !important; 
+    height: 100%;
+    border: 2px solid #3b82f6; 
+    border-radius: 8px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+/* Tombol Close Fullscreen */
+.btn-close-fs {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+    z-index: 100000;
+    transition: all 0.2s;
+}
+
+.btn-close-fs:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}

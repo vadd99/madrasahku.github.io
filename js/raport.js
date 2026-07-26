@@ -47,6 +47,27 @@ window.changePeriode = function(val) {
     if (selectedKelasId) loadSantriRaportList(selectedKelasId); 
 };
 
+// ==========================================
+// FUNGSI TOGGLE FULL SCREEN
+// ==========================================
+window.toggleFullscreen = function() {
+    const fsWrapper = document.getElementById("fullscreen-wrapper");
+    const btnClose = document.getElementById("btn-close-fs");
+    
+    if (fsWrapper.classList.contains("fs-active")) {
+        // Keluar dari Full Screen
+        fsWrapper.classList.remove("fs-active");
+        btnClose.classList.add("hidden");
+        document.body.style.overflow = ''; // Buka kunci scroll body
+    } else {
+        // Masuk ke Full Screen
+        fsWrapper.classList.add("fs-active");
+        btnClose.classList.remove("hidden");
+        document.body.style.overflow = 'hidden'; // Kunci scroll body di background
+    }
+};
+
+
 async function renderMainView() {
     if (selectedKelasId === null) {
         await loadKelasFromFirebase();
@@ -149,6 +170,10 @@ async function loadSantriRaportList(kelasId) {
 
     loadingState.classList.remove("hidden");
     tabelContainer.innerHTML = "";
+    
+    // Sembunyikan toolbar fullscreen saat loading
+    const tblToolbar = document.getElementById("tabel-toolbar");
+    if (tblToolbar) tblToolbar.classList.add("hidden");
 
     try {
         const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
@@ -160,8 +185,7 @@ async function loadSantriRaportList(kelasId) {
         let rawMapels = [];
         mapelSnap.forEach(d => rawMapels.push(d.data().nama));
         
-        // Urutkan mapel sesuai standar Raport
-        const orderAgama = ['Al-Qur\'an', 'Tajwid', 'Hadits', 'Tauhid', 'Akhlaq', 'Fiqih', 'Tarikh Islam', 'Bahasa Arab', 'Nahwu', 'Shorof'];
+        const orderAgama = ['Al-Qur'an', 'Tajwid', 'Hadits', 'Tauhid', 'Akhlaq', 'Fiqih', 'Tarikh Islam', 'Bahasa Arab', 'Nahwu', 'Shorof'];
         listMapel = rawMapels.sort((a, b) => {
            const indexA = orderAgama.indexOf(a);
            const indexB = orderAgama.indexOf(b);
@@ -196,17 +220,16 @@ async function loadSantriRaportList(kelasId) {
                 if (mapelDoc && mapelDoc.dataNilai) uhData = mapelDoc.dataNilai[santri.id];
                 
                 let sumUH = 0, countUH = 0, avgUH = 0;
-                let valUH = ["-", "-", "-"]; // Array untuk menyimpan UH1, UH2, UH3
+                let valUH = ["-", "-", "-"];
 
                 if (uhData) {
-                    // Sort keys agar urutan UH 1, 2, 3 konsisten
                     const keys = Object.keys(uhData).sort(); 
                     keys.forEach((k, index) => {
                         let num = parseFloat(uhData[k]);
                         if (!isNaN(num)) { 
                             sumUH += num; 
                             countUH++; 
-                            if(index < 3) valUH[index] = num; // Ambil maksimal 3 UH pertama
+                            if(index < 3) valUH[index] = num;
                         }
                     });
                     if (countUH > 0) avgUH = sumUH / countUH;
@@ -235,7 +258,7 @@ async function loadSantriRaportList(kelasId) {
                     uh: valUH,
                     avgUH: avgUH,
                     imtihanScore: imtihanScore,
-                    finalScore: Math.round(finalScore) // Bulatkan untuk raport
+                    finalScore: Math.round(finalScore) 
                 };
             });
 
@@ -245,7 +268,6 @@ async function loadSantriRaportList(kelasId) {
             }
         });
 
-        // Hitung Rata-rata Kelas per Kolom (Hanya untuk nilai Raport Akhir per Mapel)
         classAverages = {
             mapel: {}, 
             overallSum: 0,
@@ -285,7 +307,11 @@ async function loadSantriRaportList(kelasId) {
 
         renderTabelRaport();
         loadingState.classList.add("hidden");
-        if (exportBtn) exportBtn.classList.remove("hidden"); // Munculkan tombol export
+        
+        if (exportBtn) exportBtn.classList.remove("hidden");
+        if (tblToolbar) tblToolbar.classList.remove("hidden"); // Tampilkan tombol fullscreen
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons(); // Render ulang icon jika ada
 
     } catch (e) {
         console.error(e);
@@ -305,17 +331,14 @@ function renderTabelRaport() {
         <th rowspan="2" class="col-nama">Nama Santri</th>`;
     let theadHtml2 = `<tr>`;
     
-    // Header Mapel (Sekarang colspan 6 karena tambah UH1, UH2, UH3)
     listMapel.forEach(mapel => {
         theadHtml1 += `<th colspan="6" class="group-mapel">${mapel}</th>`;
         theadHtml2 += `<th class="col-uh">UH 1</th><th class="col-uh">UH 2</th><th class="col-uh">UH 3</th><th class="col-avg">Rata UH</th><th class="col-im">Imtihan</th><th class="col-rp">Raport</th>`;
     });
     
-    // Header Grand Total
     theadHtml1 += `<th colspan="2" class="group-rekap">REKAP AKHIR</th></tr>`;
     theadHtml2 += `<th>Jumlah</th><th>Rata-rata</th></tr>`;
 
-    // Baris Body
     let tbodyHtml = `<tbody>`;
     listSantri.forEach((santri, idx) => {
         tbodyHtml += `<tr>
@@ -331,7 +354,6 @@ function renderTabelRaport() {
             const i = d.imtihanScore > 0 ? d.imtihanScore : "-";
             const r = d.finalScore > 0 ? d.finalScore : "-";
             
-            // Insert 6 kolom data
             tbodyHtml += `<td class="val-uh">${uh1}</td><td class="val-uh">${uh2}</td><td class="val-uh">${uh3}</td><td class="text-blue">${u}</td><td>${i}</td><td class="text-green">${r}</td>`;
         });
         
@@ -342,13 +364,11 @@ function renderTabelRaport() {
     });
     tbodyHtml += `</tbody>`;
 
-    // Baris Footer Rata-rata Kelas
     let tfootHtml = `<tfoot><tr>
         <th colspan="2" class="col-nama">Rata-rata Kelas :</th>`;
         
     listMapel.forEach(mapel => {
         const rataStr = classAverages.mapel[mapel] > 0 ? classAverages.mapel[mapel] : "-";
-        // Ada 6 kolom: UH1, UH2, UH3, RataUH, Imtihan, (Raport)
         tfootHtml += `<th>-</th><th>-</th><th>-</th><th>-</th><th>-</th><th>${rataStr}</th>`; 
     });
     
@@ -365,7 +385,6 @@ function renderTabelRaport() {
     container.innerHTML = fullTable;
 }
 
-// Fitur Export ke Excel menggunakan SheetJS
 window.exportToExcel = function() {
     const table = document.getElementById("main-tabel-raport");
     if (!table) return alert("Tabel tidak ditemukan!");
@@ -373,9 +392,6 @@ window.exportToExcel = function() {
     const kelasName = listKelas.find(k => k.id === selectedKelasId)?.namaKelas || "Kelas";
     const fileName = `Rekap_Raport_${kelasName}_${activePeriode.replace(/\s+/g, '')}.xlsx`;
 
-    // Convert tabel HTML to workbook
     const wb = XLSX.utils.table_to_book(table, {sheet: "Rekap Nilai"});
-    
-    // Download
     XLSX.writeFile(wb, fileName);
 };

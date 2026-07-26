@@ -67,7 +67,6 @@
                 </div>
             </div>
 
-            <!-- MENGGUNAKAN CONTENT CARD DARI ABSENSI AGAR LEBAR DESKTOP TIDAK STRETCH -->
             <div class="absensi-content-card">
                 
                 <!-- Tampilan Daftar Kelas -->
@@ -88,9 +87,25 @@
                         <p>Menyiapkan tabel induk raport...</p>
                     </div>
                     
-                    <div class="table-responsive-wrapper" id="tabel-container">
-                        <!-- Tabel akan di-inject oleh JS di sini -->
+                    <!-- NEW: Toolbar Table (Full Screen Button) -->
+                    <div id="tabel-toolbar" class="hidden" style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                        <button onclick="toggleFullscreen()" class="btn btn-save-active" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; display: flex; align-items: center; gap: 6px; background-color: #3b82f6; border-color: #3b82f6; color: white; box-shadow: 0 2px 4px rgba(59,130,246,0.3);">
+                            <i data-lucide="maximize" style="width: 16px; height: 16px;"></i> Full Screen
+                        </button>
                     </div>
+                    
+                    <!-- NEW: Wrapper Fullscreen -->
+                    <div id="fullscreen-wrapper">
+                        <!-- Tombol Tutup (Hanya muncul saat Fullscreen aktif) -->
+                        <button id="btn-close-fs" onclick="toggleFullscreen()" class="btn-close-fs hidden">
+                            <i data-lucide="x" style="width: 18px; height: 18px;"></i> Tutup
+                        </button>
+                        
+                        <div class="table-responsive-wrapper" id="tabel-container">
+                            <!-- Tabel akan di-inject oleh JS di sini -->
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
