@@ -38,11 +38,11 @@
                     </div>
                 </div>
 
-                <!-- Selector Periode (Dibuat hidden di awal & dipaksa width 100%) -->
-                <div id="imtihan-selectors" class="selectors-container hidden" style="width: 100%;">
+                <!-- Selector Periode -->
+                <div id="imtihan-selectors" class="selectors-container">
                     <div class="imtihan-selector-wrapper" style="width: 100%;">
                         <label for="select-periode-imtihan"><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Periode Ujian</label>
-                        <select id="select-periode-imtihan" class="form-input-sm" style="width: 100%;" onchange="changePeriode(this.value)">
+                        <select id="select-periode-imtihan" class="form-input-sm" onchange="changePeriode(this.value)">
                             <option value="Imtihan 1">Imtihan 1 (Ganjil)</option>
                             <option value="Imtihan 2">Imtihan 2 (Genap)</option>
                         </select>

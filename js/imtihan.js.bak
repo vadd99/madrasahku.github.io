@@ -1,3 +1,4 @@
+
 import { db, collection, getDocs, doc, query, where, setDoc } from "./firebase-init.js";
 
 let listKelas = [];
@@ -67,15 +68,12 @@ async function loadKelasFromFirebase() {
     const emptyState = document.getElementById("empty-state-kelas");
     const gridContainer = document.getElementById("kelas-grid-container");
     const btnBack = document.getElementById("btn-back-kelas");
-    const selectorPeriode = document.getElementById("imtihan-selectors"); // Menyasar element selector periode
 
     if (!viewSantri || !gridContainer) return;
 
     if (btnBack) btnBack.classList.add("hidden");
     if (viewKelas) viewKelas.classList.remove("hidden");
     if (viewSantri) viewSantri.classList.add("hidden");
-    if (selectorPeriode) selectorPeriode.classList.add("hidden"); // Sembunyikan dropdown periode
-
     document.getElementById("page-title").innerText = "Rekap Nilai Imtihan";
     document.getElementById("page-subtitle").innerText = "Pilih kelas untuk melihat rekapitulasi nilai akhir santri.";
 
@@ -140,12 +138,10 @@ async function loadSantriImtihanList(kelasId) {
     const viewKelas = document.getElementById("view-kelas");
     const viewSantri = document.getElementById("view-santri");
     const btnBack = document.getElementById("btn-back-kelas");
-    const selectorPeriode = document.getElementById("imtihan-selectors"); // Menyasar element selector periode
 
     if (viewKelas) viewKelas.classList.add("hidden");
     if (viewSantri) viewSantri.classList.remove("hidden");
     if (btnBack) btnBack.classList.remove("hidden");
-    if (selectorPeriode) selectorPeriode.classList.remove("hidden"); // Tampilkan dropdown periode
 
     const selectedKelasData = listKelas.find(k => k.id === kelasId) || { namaKelas: "Kelas" };
     document.getElementById("page-title").innerText = `Imtihan - ${selectedKelasData.namaKelas}`;
