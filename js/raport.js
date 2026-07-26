@@ -185,7 +185,8 @@ async function loadSantriRaportList(kelasId) {
         let rawMapels = [];
         mapelSnap.forEach(d => rawMapels.push(d.data().nama));
         
-        const orderAgama = ['Al-Qur'an', 'Tajwid', 'Hadits', 'Tauhid', 'Akhlaq', 'Fiqih', 'Tarikh Islam', 'Bahasa Arab', 'Nahwu', 'Shorof'];
+        // FIX: Menggunakan kutip ganda agar kutip satu di "Al-Qur'an" tidak memecah string!
+        const orderAgama = ["Al-Qur'an", "Tajwid", "Hadits", "Tauhid", "Akhlaq", "Fiqih", "Tarikh Islam", "Bahasa Arab", "Nahwu", "Shorof"];
         listMapel = rawMapels.sort((a, b) => {
            const indexA = orderAgama.indexOf(a);
            const indexB = orderAgama.indexOf(b);
