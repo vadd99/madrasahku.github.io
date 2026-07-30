@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style-base.css">
     <link rel="stylesheet" href="css/style-layout.css">
     <link rel="stylesheet" href="css/style-components.css">
-    <link rel="stylesheet" href="css/style-pembayaran.css">
+    <link rel="stylesheet" href="css/style-pembayaran.css"> <!-- Ganti nama file CSS -->
 
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -59,11 +59,12 @@
                 </div>
 
                 <div id="view-pembayaran" class="hidden">
+                    <!-- PANDUAN -->
                     <div id="guide-box-pembayaran" class="absensi-guide-box">
                         <div class="guide-icon"><i data-lucide="info"></i></div>
                         <div class="guide-text">
                             <strong>Panduan Pembayaran:</strong>
-                            <p>Klik pada nama santri untuk mencentang bulan yang sudah dibayar. Data akan <b>otomatis tersimpan</b> setelah kamu menekan tombol "Pilih & Simpan" di dalam menu popup santri.</p>
+                            <p>Klik pada nama santri untuk mencentang bulan yang sudah dibayar. Sistem otomatis mendeteksi santri yang menunggak berdasarkan bulan saat ini. Jangan lupa klik tombol <b>Simpan Data</b> di bawah.</p>
                         </div>
                         <button class="btn-close-guide" onclick="closeGuideBox()" title="Tutup Panduan">
                             <i data-lucide="x" style="width: 18px; height: 18px;"></i>
@@ -71,6 +72,17 @@
                     </div>
 
                     <div id="santri-pembayaran-container" class="absensi-list-grid"></div>
+
+                    <div class="absensi-bottom-bar">
+                        <div class="today-date-info">
+                            <i data-lucide="coins"></i>
+                            <span id="rekap-info-text">Menunggu perubahan data...</span>
+                        </div>
+                        <button id="btn-save-pembayaran" class="btn-primary btn-save-absensi" onclick="savePembayaran()" disabled>
+                            <i data-lucide="save"></i>
+                            <span>Simpan Data</span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -78,7 +90,7 @@
 
         <!-- MODAL PILIH BULAN PEMBAYARAN -->
         <div id="modal-status-bayar" class="modal-overlay">
-            <div class="modal-card modal-md">
+            <div class="modal-card modal-md"> <!-- modal-md agar lebih lebar untuk grid bulan -->
                 <div class="modal-header">
                     <div class="modal-header-title">
                         <i data-lucide="badge-dollar-sign" class="modal-header-icon"></i>
@@ -95,6 +107,7 @@
                         <span class="text-date-badge">Centang bulan yang telah dibayar</span>
                     </div>
 
+                    <!-- GRID CHECKBOX 12 BULAN -->
                     <div class="bulan-options-grid" id="bulan-checkbox-container">
                         <!-- Di-generate via JS -->
                     </div>
@@ -102,8 +115,7 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cancel" onclick="closeModalBayar()">Batal</button>
-                    <!-- Tambah ID di sini untuk efek loading JS -->
-                    <button type="button" id="btn-save-modal" class="btn btn-save-active" onclick="applySantriPembayaran()">Pilih & Simpan</button>
+                    <button type="button" class="btn btn-save-active" onclick="applySantriPembayaran()">Pilih & Simpan</button>
                 </div>
             </div>
         </div>

@@ -16,7 +16,6 @@ let selectedSantriId = null;
 
 let activeTahun = "2026/2027";
 let currentPaymentData = {}; 
-let initialPaymentData = {}; 
 let paymentDocId = null; 
 
 const daftarBulan = ["Juli", "Agustus", "September", "Oktober", "November", "Desember", "Januari", "Februari", "Maret", "April", "Mei", "Juni"];
@@ -26,7 +25,6 @@ window.closeGuideBox = function() {
     if (box) box.style.display = "none";
 };
 
-// MENDETEKSI LAYOUT READY (INI YANG SEBELUMNYA KURANG)
 document.addEventListener("layoutReady", function () {
     const selectEl = document.getElementById("select-tahun");
     if (selectEl) {
@@ -83,8 +81,6 @@ async function loadKelasFromFirebase() {
         });
 
         listKelas = await Promise.all(kelasPromises);
-        
-        // Sorting berdasarkan nama kelas
         listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
 
         if (listKelas.length === 0) {
@@ -177,29 +173,9 @@ async function loadPembayaranSubMenu(kelasId) {
             }
         });
 
-        initialPaymentData = JSON.parse(JSON.stringify(currentPaymentData));
-        checkUnsavedChanges(); 
         renderSantriPembayaranList();
     } catch (error) {
         console.error("Gagal memuat data pembayaran:", error);
-    }
-}
-
-function checkUnsavedChanges() {
-    const btnSave = document.getElementById("btn-save-pembayaran");
-    const infoText = document.getElementById("rekap-info-text");
-    if (!btnSave) return;
-
-    let hasChanges = JSON.stringify(currentPaymentData) !== JSON.stringify(initialPaymentData);
-
-    if (hasChanges) {
-        btnSave.removeAttribute("disabled");
-        infoText.innerText = "Terdapat perubahan yang belum disimpan!";
-        infoText.classList.add("text-warning");
-    } else {
-        btnSave.setAttribute("disabled", "true");
-        infoText.innerText = "Semua data up-to-date.";
-        infoText.classList.remove("text-warning");
     }
 }
 
@@ -222,7 +198,7 @@ function renderSantriPembayaranList() {
     listSantri.forEach((santri, index) => {
         const paidMonths = currentPaymentData[santri.id] || [];
         
-        let lastPaidMonth = "-";
+        let lastPaidMonth = "";
         let maxIdx = -1;
         paidMonths.forEach(bln => {
             let idx = daftarBulan.indexOf(bln);
@@ -232,21 +208,25 @@ function renderSantriPembayaranList() {
             }
         });
 
-        let badgeClass = "badge-status-nunggak";
-        let statusLabel = "BELUM BAYAR";
-        let tunggakanText = "";
+        let badgeClass = "";
+        let statusLabel = "";
+        let infoText = "";
 
+        // Logika Teks Simpel (Tidak Bertumpuk)
         if (maxIdx >= currentTargetIdx) {
             badgeClass = "badge-status-lunas";
             statusLabel = "LUNAS";
+            infoText = `<span class="text-success">Lunas s/d bulan ini</span>`;
         } else if (maxIdx >= 0) {
             badgeClass = "badge-status-sebagian";
             statusLabel = "MENUNGGAK";
             let telat = currentTargetIdx - maxIdx;
-            tunggakanText = `<b class="text-warning">(${telat} bln nunggak)</b>`;
+            infoText = `<span class="text-warning">Terakhir: ${lastPaidMonth} (${telat} bln nunggak)</span>`;
         } else {
+            badgeClass = "badge-status-nunggak";
+            statusLabel = "BELUM BAYAR";
             let telat = currentTargetIdx + 1; 
-            tunggakanText = `<b class="text-warning">(${telat} bln nunggak)</b>`;
+            infoText = `<span class="text-danger">Belum bayar sama sekali (${telat} bln nunggak)</span>`;
         }
 
         listHtml += `
@@ -255,10 +235,7 @@ function renderSantriPembayaranList() {
                     <div class="number-badge">${index + 1}</div>
                     <div class="santri-info">
                         <div class="santri-name">${santri.nama}</div>
-                        <div class="santri-rekap-counters">
-                            <span class="rekap-pill">Terakhir: <b>${lastPaidMonth}</b></span>
-                            <span class="rekap-pill">${tunggakanText}</span>
-                        </div>
+                        <div class="santri-payment-info">${infoText}</div>
                     </div>
                 </div>
                 <div class="santri-card-right">
@@ -273,6 +250,7 @@ function renderSantriPembayaranList() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
+// 3. MODAL CHECKBOX BULAN
 window.openModalBayar = function(santriId) {
     selectedSantriId = santriId;
     const santri = listSantri.find(s => s.id === santriId);
@@ -302,33 +280,27 @@ window.closeModalBayar = function() {
     document.getElementById("modal-status-bayar").classList.remove("active");
 };
 
-window.applySantriPembayaran = function() {
-    if (!selectedSantriId) return;
+// 4. SIMPAN LANGSUNG KE FIREBASE DARI DALAM MODAL
+window.applySantriPembayaran = async function() {
+    if (!selectedSantriId || !selectedKelasId) return;
 
+    const btnSave = document.getElementById('btn-save-modal');
+    const originalText = btnSave.innerHTML;
+    
+    // Ubah tombol jadi loading
+    btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="margin-right: 8px;"></i>Menyimpan...`;
+    btnSave.disabled = true;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Ambil data checkbox
     const checkboxes = document.querySelectorAll('input[name="bulan-bayar"]:checked');
     let selectedMonths = [];
     checkboxes.forEach(cb => selectedMonths.push(cb.value));
 
+    // Update state lokal
     currentPaymentData[selectedSantriId] = selectedMonths;
-    
-    closeModalBayar();
-    renderSantriPembayaranList();
-    checkUnsavedChanges();
-};
 
-window.showSuccessModal = function(msg) {
-    document.getElementById("success-message").innerText = msg;
-    document.getElementById("modal-success-alert").classList.add("active");
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-};
-
-window.closeSuccessModal = function() {
-    document.getElementById("modal-success-alert").classList.remove("active");
-};
-
-window.savePembayaran = async function() {
-    if (!selectedKelasId) return;
-
+    // Siapkan Payload Firebase
     const payload = {
         kelasId: selectedKelasId,
         tahunAjaran: activeTahun,
@@ -337,28 +309,34 @@ window.savePembayaran = async function() {
     };
 
     try {
-        const btnSave = document.getElementById('btn-save-pembayaran');
-        const originalText = btnSave.innerHTML;
-        btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i><span>Menyimpan...</span>`;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-
         if (paymentDocId) {
             const docRef = doc(db, "pembayaran_bulanan", paymentDocId);
             await updateDoc(docRef, payload);
         } else {
-            await addDoc(collection(db, "pembayaran_bulanan"), payload);
+            const docRef = await addDoc(collection(db, "pembayaran_bulanan"), payload);
+            paymentDocId = docRef.id; // Simpan ID agar editan berikutnya cukup Update
         }
         
-        btnSave.innerHTML = originalText;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-
-        initialPaymentData = JSON.parse(JSON.stringify(currentPaymentData));
-        checkUnsavedChanges();
-        
-        showSuccessModal(`Data rekap pembayaran berhasil disimpan.`);
-        await loadPembayaranSubMenu(selectedKelasId);
+        closeModalBayar();
+        renderSantriPembayaranList(); // Re-render tampilan list 
+        showSuccessModal(`Data pembayaran ${listSantri.find(s => s.id === selectedSantriId).nama} berhasil diperbarui.`);
     } catch (error) {
         console.error("Gagal menyimpan pembayaran:", error);
         alert("Gagal menyimpan data pembayaran. Periksa koneksi internet.");
+    } finally {
+        // Kembalikan status tombol seperti semula
+        btnSave.innerHTML = originalText;
+        btnSave.disabled = false;
     }
+};
+
+/* --- FUNGSI CUSTOM ALERT --- */
+window.showSuccessModal = function(msg) {
+    document.getElementById("success-message").innerText = msg;
+    document.getElementById("modal-success-alert").classList.add("active");
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+window.closeSuccessModal = function() {
+    document.getElementById("modal-success-alert").classList.remove("active");
 };

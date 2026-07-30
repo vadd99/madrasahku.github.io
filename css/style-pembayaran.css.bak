@@ -421,3 +421,52 @@ body.dark .kelas-action { color: #94a3b8; background: rgba(255, 255, 255, 0.05);
     .today-date-info { justify-content: center; }
     .btn-save-absensi { width: 100%; padding: 12px; }
 }
+
+
+/* =========================================================
+   MODIFIKASI KHUSUS PEMBAYARAN
+   ========================================================= */
+
+/* Modal lebih lebar untuk 12 Bulan */
+.modal-md {
+    width: 90%;
+    max-width: 500px;
+}
+
+/* Grid untuk Checkbox Bulan */
+.bulan-options-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
+    gap: 10px; 
+}
+
+@media (max-width: 480px) {
+    .bulan-options-grid { 
+        grid-template-columns: repeat(2, 1fr); /* 2 Kolom di HP */
+    }
+}
+
+.status-option-card.checkbox-mode .status-card-body {
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.status-option-card.checkbox-mode input:checked + .status-card-body { 
+    color: #10b981; 
+    border-color: #10b981; 
+    background: rgba(16, 185, 129, 0.12);
+}
+
+/* Badge Status Pembayaran */
+.badge-status-lunas { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-status-nunggak { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-status-sebagian { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+/* Teks Info Rekap di bawah nama */
+.santri-rekap-counters span b {
+    color: var(--text-main);
+}
+.text-warning { color: #ef4444 !important; }
+.text-success { color: #10b981 !important; }
