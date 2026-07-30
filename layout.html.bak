@@ -30,11 +30,6 @@
                 <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
                 <span>Absensi Santri</span>
             </a>
-            <!-- MENU BARU DITAMBAHKAN DI SINI -->
-            <a href="pembayaran.html" class="nav-item" data-path="pembayaran.html">
-                <i data-lucide="wallet" class="w-5 h-5"></i>
-                <span>Rekap Pembayaran</span>
-            </a>
             <a href="nilai.html" class="nav-item" data-path="nilai.html">
                 <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                 <span>Rekap Nilai Santri</span>

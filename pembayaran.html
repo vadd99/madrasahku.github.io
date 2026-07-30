@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Pembayaran - AL-HADI</title>
+    
+    <link rel="stylesheet" href="css/style-base.css">
+    <link rel="stylesheet" href="css/style-layout.css">
+    <link rel="stylesheet" href="css/style-components.css">
+    <link rel="stylesheet" href="css/style-pembayaran.css"> <!-- Ganti nama file CSS -->
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark">
+
+    <div id="layout-wrapper"></div>
+
+    <template id="page-content">
+        <div class="absensi-page-container">
+            
+            <div class="page-toolbar">
+                <div class="toolbar-info page-header-card">
+                    <div class="header-content-flex">
+                        <button id="btn-back-kelas" class="btn-back hidden" onclick="goBackToKelasList()" title="Kembali ke Daftar Kelas">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        
+                        <div class="header-icon-wrapper">
+                            <i data-lucide="wallet"></i>
+                        </div>
+                        <div class="header-text-wrapper">
+                            <h2 class="page-title" id="page-title">Rekap Pembayaran</h2>
+                            <p class="page-subtitle" id="page-subtitle">Pilih kelas untuk mengelola pembayaran bulanan santri.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pembayaran-selectors" class="selectors-container hidden">
+                    <div class="imtihan-selector-wrapper">
+                        <label for="select-tahun"><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Tahun Ajaran</label>
+                        <select id="select-tahun" class="form-input-sm" onchange="changeTahunAjaran(this.value)">
+                            <option value="2026/2027">2026 / 2027</option>
+                            <option value="2027/2028">2027 / 2028</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absensi-content-card">
+                
+                <div id="view-kelas">
+                    <div id="empty-state-kelas" class="empty-state">
+                        <div class="empty-icon-wrapper"><i data-lucide="school"></i></div>
+                        <h3 class="empty-title">Belum Ada Data Kelas</h3>
+                        <p class="empty-desc">Tambahkan kelas terlebih dahulu pada menu Data Santri.</p>
+                    </div>
+                    <div id="kelas-grid-container" class="kelas-grid hidden"></div>
+                </div>
+
+                <div id="view-pembayaran" class="hidden">
+                    <!-- PANDUAN -->
+                    <div id="guide-box-pembayaran" class="absensi-guide-box">
+                        <div class="guide-icon"><i data-lucide="info"></i></div>
+                        <div class="guide-text">
+                            <strong>Panduan Pembayaran:</strong>
+                            <p>Klik pada nama santri untuk mencentang bulan yang sudah dibayar. Sistem otomatis mendeteksi santri yang menunggak berdasarkan bulan saat ini. Jangan lupa klik tombol <b>Simpan Data</b> di bawah.</p>
+                        </div>
+                        <button class="btn-close-guide" onclick="closeGuideBox()" title="Tutup Panduan">
+                            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                        </button>
+                    </div>
+
+                    <div id="santri-pembayaran-container" class="absensi-list-grid"></div>
+
+                    <div class="absensi-bottom-bar">
+                        <div class="today-date-info">
+                            <i data-lucide="coins"></i>
+                            <span id="rekap-info-text">Menunggu perubahan data...</span>
+                        </div>
+                        <button id="btn-save-pembayaran" class="btn-primary btn-save-absensi" onclick="savePembayaran()" disabled>
+                            <i data-lucide="save"></i>
+                            <span>Simpan Data</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MODAL PILIH BULAN PEMBAYARAN -->
+        <div id="modal-status-bayar" class="modal-overlay">
+            <div class="modal-card modal-md"> <!-- modal-md agar lebih lebar untuk grid bulan -->
+                <div class="modal-header">
+                    <div class="modal-header-title">
+                        <i data-lucide="badge-dollar-sign" class="modal-header-icon"></i>
+                        <h3>Update Pembayaran Bulanan</h3>
+                    </div>
+                    <button class="btn-close-modal" onclick="closeModalBayar()">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="target-santri-info">
+                        <h4 id="modal-santri-nama">Nama Santri</h4>
+                        <span class="text-date-badge">Centang bulan yang telah dibayar</span>
+                    </div>
+
+                    <!-- GRID CHECKBOX 12 BULAN -->
+                    <div class="bulan-options-grid" id="bulan-checkbox-container">
+                        <!-- Di-generate via JS -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModalBayar()">Batal</button>
+                    <button type="button" class="btn btn-save-active" onclick="applySantriPembayaran()">Pilih & Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL SUKSES -->
+        <div id="modal-success-alert" class="modal-overlay">
+            <div class="modal-card modal-sm text-center">
+                <div class="success-icon-wrapper">
+                    <i data-lucide="check-circle"></i>
+                </div>
+                <h3 class="success-title">Berhasil!</h3>
+                <p id="success-message" class="success-message">Data pembayaran berhasil disimpan.</p>
+                <div class="modal-footer" style="justify-content: center; border-top: none; margin-top: 5px;">
+                    <button type="button" class="btn btn-save-active" onclick="closeSuccessModal()" style="width: 100%;">Oke, Mengerti</button>
+                </div>
+            </div>
+        </div>
+
+    </template>
+
+    <script src="js/main.js"></script>
+    <script type="module" src="js/pembayaran.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,383 @@
+import { 
+    db, 
+    collection, 
+    getDocs, 
+    addDoc, 
+    updateDoc, 
+    doc,
+    query,
+    where 
+} from "./firebase-init.js";
+
+let listKelas = [];
+let listSantri = [];
+let selectedKelasId = null;
+let selectedSantriId = null;
+
+let activeTahun = "2026/2027";
+let currentPaymentData = {}; // Menyimpan array bulan yang sudah dibayar per santri
+let initialPaymentData = {}; 
+let paymentDocId = null; 
+
+// Daftar Bulan Tahun Ajaran
+const daftarBulan = ["Juli", "Agustus", "September", "Oktober", "November", "Desember", "Januari", "Februari", "Maret", "April", "Mei", "Juni"];
+
+window.closeGuideBox = function() {
+    const box = document.getElementById("guide-box-pembayaran");
+    if (box) box.style.display = "none";
+};
+
+function initPembayaranView() {
+    if (document.getElementById("view-pembayaran")) {
+        const selectEl = document.getElementById("select-tahun");
+        if (selectEl) activeTahun = selectEl.value;
+        renderMainView();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPembayaranView);
+} else {
+    initPembayaranView();
+}
+
+window.changeTahunAjaran = function(val) {
+    activeTahun = val;
+    if (selectedKelasId) loadPembayaranSubMenu(selectedKelasId); 
+};
+
+async function renderMainView() {
+    if (selectedKelasId === null) {
+        await loadKelasFromFirebase();
+    } else {
+        await loadPembayaranSubMenu(selectedKelasId);
+    }
+}
+
+// 1. LOAD DAFTAR KELAS
+async function loadKelasFromFirebase() {
+    const viewKelas = document.getElementById("view-kelas");
+    const viewPembayaran = document.getElementById("view-pembayaran");
+    const emptyState = document.getElementById("empty-state-kelas");
+    const gridContainer = document.getElementById("kelas-grid-container");
+    const btnBack = document.getElementById("btn-back-kelas");
+    const pageTitle = document.getElementById("page-title");
+    const selectors = document.getElementById("pembayaran-selectors");
+
+    if (!viewPembayaran || !gridContainer) return;
+
+    if (btnBack) btnBack.classList.add("hidden");
+    if (pageTitle) pageTitle.innerText = "Rekap Pembayaran";
+    if (selectors) selectors.classList.add("hidden");
+    
+    viewKelas.classList.remove("hidden");
+    viewPembayaran.classList.add("hidden");
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "kelas"));
+        listKelas = [];
+        
+        const kelasPromises = querySnapshot.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            const santriSnap = await getDocs(collection(db, "kelas", docSnap.id, "santri"));
+            return {
+                id: docSnap.id,
+                namaKelas: data.namaKelas || "Kelas Tanpa Nama",
+                waliKelas: data.waliKelas || "-",
+                jumlahSantri: santriSnap.size
+            };
+        });
+
+        listKelas = await Promise.all(kelasPromises);
+        listKelas.sort((a, b) => a.namaKelas.localeCompare(b.namaKelas, undefined, { numeric: true }));
+
+        if (listKelas.length === 0) {
+            emptyState.classList.remove("hidden");
+            gridContainer.classList.add("hidden");
+            return;
+        }
+
+        emptyState.classList.add("hidden");
+        gridContainer.classList.remove("hidden");
+
+        let cardsHtml = "";
+        listKelas.forEach((kelas) => {
+            cardsHtml += `
+                <div class="kelas-card-item" onclick="openPembayaranSubMenu('${kelas.id}')">
+                    <div class="kelas-icon-wrapper"><i data-lucide="users"></i></div>
+                    <div class="kelas-info">
+                        <div class="kelas-name">${kelas.namaKelas}</div>
+                        <div class="kelas-meta">
+                            <span class="meta-badge meta-wali"><i data-lucide="user"></i> Wali: ${kelas.waliKelas}</span>
+                            <span class="meta-badge meta-santri"><i data-lucide="user-check"></i> ${kelas.jumlahSantri} Santri</span>
+                        </div>
+                    </div>
+                    <div class="kelas-action"><i data-lucide="chevron-right"></i></div>
+                </div>
+            `;
+        });
+
+        gridContainer.innerHTML = cardsHtml;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (error) {
+        console.error("Gagal mengambil kelas:", error);
+    }
+}
+
+// 2. SUB-MENU PEMBAYARAN SANTRI
+window.openPembayaranSubMenu = function(kelasId) {
+    selectedKelasId = kelasId;
+    renderMainView();
+};
+
+window.goBackToKelasList = function() {
+    selectedKelasId = null;
+    selectedSantriId = null;
+    renderMainView();
+};
+
+async function loadPembayaranSubMenu(kelasId) {
+    const viewKelas = document.getElementById("view-kelas");
+    const viewPembayaran = document.getElementById("view-pembayaran");
+    const btnBack = document.getElementById("btn-back-kelas");
+    const pageTitle = document.getElementById("page-title");
+    const selectors = document.getElementById("pembayaran-selectors");
+
+    selectors.classList.remove("hidden");
+    const selectedKelasData = listKelas.find(k => k.id === kelasId);
+    
+    btnBack.classList.remove("hidden");
+    pageTitle.innerText = `Pembayaran - ${selectedKelasData.namaKelas}`;
+    
+    viewKelas.classList.add("hidden");
+    viewPembayaran.classList.remove("hidden");
+
+    try {
+        // Ambil list santri
+        const santriSnap = await getDocs(collection(db, "kelas", kelasId, "santri"));
+        listSantri = [];
+        santriSnap.forEach((docSnap) => {
+            listSantri.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        listSantri.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
+
+        // Ambil data pembayaran dari Firebase
+        currentPaymentData = {};
+        paymentDocId = null; 
+
+        const q = query(collection(db, "pembayaran_bulanan"), 
+                  where("kelasId", "==", kelasId), 
+                  where("tahunAjaran", "==", activeTahun));
+        
+        const paySnap = await getDocs(q);
+        
+        if (!paySnap.empty) {
+            const docData = paySnap.docs[0];
+            paymentDocId = docData.id;
+            currentPaymentData = docData.data().dataPembayaran || {};
+        }
+
+        // Set default array kosong jika santri belum bayar sama sekali
+        listSantri.forEach(s => {
+            if (!currentPaymentData[s.id]) {
+                currentPaymentData[s.id] = [];
+            }
+        });
+
+        // Deep copy untuk deteksi perubahan
+        initialPaymentData = JSON.parse(JSON.stringify(currentPaymentData));
+        checkUnsavedChanges(); 
+        renderSantriPembayaranList();
+    } catch (error) {
+        console.error("Gagal memuat data pembayaran:", error);
+    }
+}
+
+// Deteksi perubahan untuk mengaktifkan tombol save
+function checkUnsavedChanges() {
+    const btnSave = document.getElementById("btn-save-pembayaran");
+    const infoText = document.getElementById("rekap-info-text");
+    if (!btnSave) return;
+
+    let hasChanges = JSON.stringify(currentPaymentData) !== JSON.stringify(initialPaymentData);
+
+    if (hasChanges) {
+        btnSave.removeAttribute("disabled");
+        infoText.innerText = "Terdapat perubahan yang belum disimpan!";
+        infoText.classList.add("text-warning");
+    } else {
+        btnSave.setAttribute("disabled", "true");
+        infoText.innerText = "Semua data up-to-date.";
+        infoText.classList.remove("text-warning");
+    }
+}
+
+// Simulasi index bulan saat ini (Contoh: September = index 2 di daftarBulan)
+// Dalam implementasi nyata, ini bisa disesuaikan dengan date system sebenarnya
+function getCurrentMonthTargetIndex() {
+    const currentMonth = new Date().getMonth(); // 0 (Jan) - 11 (Dec)
+    // Mapping ke daftarBulan (Tahun ajaran mulai Juli)
+    // Jan = 6, Feb = 7, dst.
+    const monthMapping = {
+        6: 0, 7: 1, 8: 2, 9: 3, 10: 4, 11: 5, // Jul - Dec
+        0: 6, 1: 7, 2: 8, 3: 9, 4: 10, 5: 11  // Jan - Jun
+    };
+    return monthMapping[currentMonth] || 0;
+}
+
+function renderSantriPembayaranList() {
+    const container = document.getElementById("santri-pembayaran-container");
+    if (!container) return;
+
+    const currentTargetIdx = getCurrentMonthTargetIndex();
+    let listHtml = "";
+
+    listSantri.forEach((santri, index) => {
+        const paidMonths = currentPaymentData[santri.id] || [];
+        
+        // Cari bulan terakhir yang dibayar berdasarkan urutan daftarBulan
+        let lastPaidMonth = "-";
+        let maxIdx = -1;
+        paidMonths.forEach(bln => {
+            let idx = daftarBulan.indexOf(bln);
+            if (idx > maxIdx) {
+                maxIdx = idx;
+                lastPaidMonth = bln;
+            }
+        });
+
+        // Logika Status Badge
+        let badgeClass = "badge-status-nunggak";
+        let statusLabel = "BELUM BAYAR";
+        let tunggakanText = "";
+
+        if (maxIdx >= currentTargetIdx) {
+            badgeClass = "badge-status-lunas";
+            statusLabel = "LUNAS";
+        } else if (maxIdx >= 0) {
+            badgeClass = "badge-status-sebagian";
+            statusLabel = "MENUNGGAK";
+            let telat = currentTargetIdx - maxIdx;
+            tunggakanText = `<b class="text-warning">(${telat} bln nunggak)</b>`;
+        } else {
+            let telat = currentTargetIdx + 1; // nunggak dari awal
+            tunggakanText = `<b class="text-warning">(${telat} bln nunggak)</b>`;
+        }
+
+        listHtml += `
+            <div class="absensi-santri-card" onclick="openModalBayar('${santri.id}')">
+                <div class="santri-card-left">
+                    <div class="number-badge">${index + 1}</div>
+                    <div class="santri-info">
+                        <div class="santri-name">${santri.nama}</div>
+                        <div class="santri-rekap-counters">
+                            <span class="rekap-pill">Terakhir: <b>${lastPaidMonth}</b></span>
+                            <span class="rekap-pill">${tunggakanText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="santri-card-right">
+                    <span class="badge-status ${badgeClass}">${statusLabel}</span>
+                    <i data-lucide="chevron-right" class="chevron-icon"></i>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = listHtml;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// 3. MODAL CHECKBOX BULAN
+window.openModalBayar = function(santriId) {
+    selectedSantriId = santriId;
+    const santri = listSantri.find(s => s.id === santriId);
+    if (!santri) return;
+
+    document.getElementById("modal-santri-nama").innerText = santri.nama;
+
+    // Generate Checkbox Bulan
+    const container = document.getElementById("bulan-checkbox-container");
+    const paidMonths = currentPaymentData[santriId] || [];
+    
+    let gridHtml = "";
+    daftarBulan.forEach(bulan => {
+        const isChecked = paidMonths.includes(bulan) ? "checked" : "";
+        gridHtml += `
+            <label class="status-option-card checkbox-mode option-hadir">
+                <input type="checkbox" name="bulan-bayar" value="${bulan}" ${isChecked}>
+                <div class="status-card-body"><span>${bulan}</span></div>
+            </label>
+        `;
+    });
+    
+    container.innerHTML = gridHtml;
+    document.getElementById("modal-status-bayar").classList.add("active");
+};
+
+window.closeModalBayar = function() {
+    document.getElementById("modal-status-bayar").classList.remove("active");
+};
+
+window.applySantriPembayaran = function() {
+    if (!selectedSantriId) return;
+
+    const checkboxes = document.querySelectorAll('input[name="bulan-bayar"]:checked');
+    let selectedMonths = [];
+    checkboxes.forEach(cb => selectedMonths.push(cb.value));
+
+    // Update state
+    currentPaymentData[selectedSantriId] = selectedMonths;
+    
+    closeModalBayar();
+    renderSantriPembayaranList();
+    checkUnsavedChanges();
+};
+
+/* --- FUNGSI CUSTOM ALERT --- */
+window.showSuccessModal = function(msg) {
+    document.getElementById("success-message").innerText = msg;
+    document.getElementById("modal-success-alert").classList.add("active");
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+window.closeSuccessModal = function() {
+    document.getElementById("modal-success-alert").classList.remove("active");
+};
+
+// 4. SIMPAN DATA KE FIREBASE
+window.savePembayaran = async function() {
+    if (!selectedKelasId) return;
+
+    const payload = {
+        kelasId: selectedKelasId,
+        tahunAjaran: activeTahun,
+        dataPembayaran: currentPaymentData,
+        updatedAt: new Date()
+    };
+
+    try {
+        const btnSave = document.getElementById('btn-save-pembayaran');
+        const originalText = btnSave.innerHTML;
+        btnSave.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i><span>Menyimpan...</span>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        if (paymentDocId) {
+            const docRef = doc(db, "pembayaran_bulanan", paymentDocId);
+            await updateDoc(docRef, payload);
+        } else {
+            await addDoc(collection(db, "pembayaran_bulanan"), payload);
+        }
+        
+        btnSave.innerHTML = originalText;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        initialPaymentData = JSON.parse(JSON.stringify(currentPaymentData));
+        checkUnsavedChanges();
+        
+        showSuccessModal(`Data rekap pembayaran berhasil disimpan.`);
+        await loadPembayaranSubMenu(selectedKelasId);
+    } catch (error) {
+        console.error("Gagal menyimpan pembayaran:", error);
+        alert("Gagal menyimpan data pembayaran. Periksa koneksi internet.");
+    }
+};

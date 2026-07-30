@@ -1,0 +1,472 @@
+.hidden { display: none !important; }
+
+/* =========================================================
+   CONTAINER UTAMA & CONTENT CARD
+   ========================================================= */
+.absensi-page-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    height: 100%; 
+    max-height: 100%; 
+    overflow: hidden; 
+}
+
+.absensi-content-card { 
+    background-color: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-lg); 
+    padding: 20px; 
+    flex: 1;           
+    overflow-y: auto;  
+    min-height: 0;     
+    position: relative;
+}
+
+/* =========================================================
+   HEADER BARU (MENDUKUNG LIGHT & DARK MODE)
+   ========================================================= */
+.page-header-card {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.05) 0%, #ffffff 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px; 
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+body.dark .page-header-card {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.2) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.page-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, transparent);
+    opacity: 0.9;
+}
+
+.header-content-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon-wrapper {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.header-icon-wrapper i { width: 20px; height: 20px; }
+
+.header-text-wrapper .page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b; 
+    margin: 0 0 2px 0;
+}
+body.dark .header-text-wrapper .page-title { color: #ffffff; }
+
+.header-text-wrapper .page-subtitle {
+    font-size: 0.75rem;
+    color: #64748b; 
+    margin: 0;
+    line-height: 1.3;
+}
+body.dark .header-text-wrapper .page-subtitle { color: #94a3b8; }
+
+#btn-back-kelas {
+    background: rgba(16, 185, 129, 0.15); 
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0; 
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+#btn-back-kelas:hover { background: #10b981; color: #ffffff; }
+#btn-back-kelas i { width: 20px; height: 20px; }
+
+
+/* =========================================================
+   SELECTOR PERIODE (DI-UPDATE DENGAN BACKGROUND CARD)
+   ========================================================= */
+.selectors-container {
+    display: flex; 
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+/* Pembungkus Card untuk Selector */
+.imtihan-selector-wrapper {
+    display: flex;
+    align-items: center; /* Membuat teks dan kotak pilihan sejajar menyamping */
+    width: 100%; 
+    gap: 12px;
+    background: #ffffff; /* Warna Card Light Mode */
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+body.dark .imtihan-selector-wrapper {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Label Ikon & Teks "Periode" */
+.imtihan-selector-wrapper label {
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    margin: 0;
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: #475569; /* Teks Light Mode */
+    white-space: nowrap; /* Mencegah teks turun ke baris baru */
+}
+
+body.dark .imtihan-selector-wrapper label {
+    color: #94a3b8; /* Teks Dark Mode */
+}
+
+/* Modifikasi Kotak Select Dropdown */
+.imtihan-selector-wrapper select {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #1e293b;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.dark .imtihan-selector-wrapper select {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.imtihan-selector-wrapper select:focus {
+    border-color: #10b981;
+}
+
+/* Reset .form-input-sm khusus elemen lain jika ada */
+.form-input-sm { 
+    background: var(--bg-main); 
+    color: var(--text-main); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius-sm); 
+    outline: none; 
+}
+
+
+/* =========================================================
+   GRID KELAS BARU (MENDUKUNG LIGHT & DARK MODE)
+   ========================================================= */
+.kelas-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding-bottom: 20px;
+}
+
+.kelas-card-item {
+    display: flex;
+    align-items: center;
+    background: #ffffff; /* Putih bersih untuk Light Mode */
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* === PERBAIKAN DARK MODE: Background disamakan dengan Daftar Santri === */
+body.dark .kelas-card-item {
+    background-color: var(--bg-main); /* Menggunakan variabel warna gelap murni yang sama dengan santri */
+    border: 1px solid var(--border-color); /* Menyamakan garis batas */
+    box-shadow: none; /* Menghilangkan bayangan agar terlihat lebih flat/solid */
+}
+
+.kelas-card-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1);
+    background: #f8fafc;
+}
+
+body.dark .kelas-card-item:hover {
+    background-color: var(--bg-main); /* Tetap gelap solid saat dihover */
+    border-color: var(--primary-border); /* Menggunakan warna border primary (hijau) yang standar */
+    box-shadow: none;
+    transform: translateX(3px); /* Ubah efek angkat (translateY) menjadi geser samping (translateX) seperti santri */
+}
+
+
+.kelas-icon-wrapper {
+    background: rgba(16, 185, 129, 0.15); color: #10b981;
+    width: 50px; height: 50px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.kelas-icon-wrapper i { width: 26px; height: 26px; }
+
+.kelas-info { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.kelas-name {
+    font-size: 1.15rem; font-weight: 700; color: #1e293b; 
+    margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dark .kelas-name { color: #ffffff; }
+
+.kelas-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.meta-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.7rem; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; white-space: nowrap;
+}
+.meta-badge i { width: 12px; height: 12px; }
+
+.meta-wali { background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3); }
+body.dark .meta-wali { color: #38bdf8; }
+
+.meta-santri { background: rgba(244, 63, 94, 0.15); color: #e11d48; border: 1px solid rgba(244, 63, 94, 0.3); }
+body.dark .meta-santri { color: #f43f5e; }
+
+.kelas-action {
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; transition: all 0.3s ease; background: #f1f5f9;
+    width: 32px; height: 32px; border-radius: 50%;
+}
+body.dark .kelas-action { color: #94a3b8; background: rgba(255, 255, 255, 0.05); }
+.kelas-card-item:hover .kelas-action { color: #ffffff; background: #10b981; transform: translateX(3px); }
+.kelas-action i { width: 18px; height: 18px; }
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+.empty-state { 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    text-align: center; padding: 40px 20px; background: var(--bg-main); 
+    border: 1px dashed var(--border-color); border-radius: var(--radius-md); 
+}
+.empty-icon-wrapper { 
+    width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); 
+    color: #10b981; border-radius: 50%; display: flex; align-items: center; 
+    justify-content: center; margin-bottom: 16px; 
+}
+.empty-icon-wrapper i { width: 30px; height: 30px; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+.empty-desc { font-size: 0.85rem; color: var(--text-muted); max-width: 350px; margin: 0 auto 20px auto; line-height: 1.4; }
+
+/* =========================================================
+   PANDUAN ABSENSI & DAFTAR SANTRI
+   ========================================================= */
+.absensi-guide-box { 
+    display: flex; align-items: flex-start; gap: 12px; 
+    background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); 
+    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; color: var(--text-main); 
+    position: relative; /* Tambahan agar tombol X posisinya presisi */
+    padding-right: 40px; /* Tambahan ruang agar teks tidak tertutup tombol X */
+}
+.guide-icon { color: #10b981; display: flex; margin-top: 2px; }
+.guide-text p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+/* Tambahan styling tombol close (X) Panduan */
+.btn-close-guide {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+.btn-close-guide:hover {
+    background: rgba(239, 68, 68, 0.15); 
+    color: #ef4444; /* Berubah merah saat disentuh */
+}
+
+.absensi-list-grid { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+.absensi-santri-card { 
+    display: flex; align-items: center; justify-content: space-between; 
+    background-color: var(--bg-main); border: 1px solid var(--border-color); 
+    border-radius: var(--radius-md); padding: 12px 16px; cursor: pointer; transition: var(--transition); 
+}
+.absensi-santri-card:hover { border-color: var(--primary-border); transform: translateX(3px); }
+
+.santri-card-left { display: flex; align-items: center; gap: 12px; }
+.santri-name { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+.santri-rekap-counters { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.rekap-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--text-light); }
+.rekap-izin b { color: #f59e0b; } .rekap-sakit b { color: #3b82f6; } .rekap-alpa b { color: #ef4444; }
+.santri-card-right { display: flex; align-items: center; gap: 10px; }
+
+/* =========================================================
+   BADGES STATUS KEHADIRAN
+   ========================================================= */
+.badge-status { font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-status-empty { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px dashed var(--border-color); }
+.badge-status-hadir { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-status-izin { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-status-sakit { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-status-alpa { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+/* =========================================================
+   BOTTOM BAR & TOMBOL SIMPAN
+   ========================================================= */
+.absensi-bottom-bar { 
+    display: flex; align-items: center; justify-content: space-between; 
+    background: var(--bg-card); border: 1px solid var(--primary-border); 
+    border-radius: var(--radius-md); padding: 14px 20px; position: sticky; 
+    bottom: 0; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,0.6); margin-top: 20px;
+}
+.today-date-info { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; color: var(--primary-text); }
+.btn-save-absensi { 
+    display: flex; align-items: center; justify-content: center; gap: 8px; 
+    background-color: #10b981; color: #ffffff; border: none; padding: 10px 20px; 
+    border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; 
+}
+.btn-save-absensi:active { transform: scale(0.95); }
+.btn-save-absensi:disabled { background-color: var(--bg-main) !important; color: var(--text-muted) !important; border: 1px solid var(--border-color) !important; cursor: not-allowed; opacity: 0.6; transform: none !important; box-shadow: none !important; }
+
+/* =========================================================
+   MODAL (HEADER, BODY, FOOTER)
+   ========================================================= */
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+.modal-header-title { display: flex; align-items: center; gap: 10px; }
+.modal-header-title h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+.modal-header-icon { width: 20px; height: 20px; color: #10b981; }
+
+.btn-close-modal { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 32px; border-radius: var(--radius-sm, 6px); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+.btn-close-modal:hover { background-color: rgba(255, 255, 255, 0.08); color: var(--text-main); }
+.btn-close-modal i, .btn-close-modal svg { width: 18px; height: 18px; }
+
+.target-santri-info { text-align: center; margin-bottom: 16px; }
+.target-santri-info h4 { font-size: 1.1rem; color: var(--text-main); }
+.text-date-badge { font-size: 0.75rem; color: var(--text-light); }
+
+.status-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.status-option-card { cursor: pointer; position: relative; }
+.status-option-card input { position: absolute; opacity: 0; }
+.status-card-body { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 600; transition: var(--transition); }
+.status-option-card input:checked + .status-card-body { border-color: var(--primary-text); background: rgba(16, 185, 129, 0.12); color: var(--text-main); }
+
+.option-hadir input:checked + .status-card-body { color: #10b981; border-color: #10b981; }
+.option-izin input:checked + .status-card-body { color: #f59e0b; border-color: #f59e0b; }
+.option-sakit input:checked + .status-card-body { color: #3b82f6; border-color: #3b82f6; }
+.option-alpa input:checked + .status-card-body { color: #ef4444; border-color: #ef4444; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+.modal-footer .btn { padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; display: inline-flex; align-items: center; justify-content: center; }
+.modal-footer .btn-cancel { background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+.modal-footer .btn-cancel:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+.modal-footer .btn-save-active { background-color: #10b981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+.modal-footer .btn-save-active:hover { background-color: #059669 !important; }
+.modal-footer .btn-save-active:active { transform: scale(0.95); }
+
+/* =========================================================
+   STYLE CUSTOM MODAL SUKSES
+   ========================================================= */
+.text-center { text-align: center; }
+.success-icon-wrapper { display: inline-flex; align-items: center; justify-content: center; width: 70px; height: 70px; background: rgba(16, 185, 129, 0.15); color: #10b981; border-radius: 50%; margin: 10px auto 20px auto; }
+.success-icon-wrapper i { width: 36px; height: 36px; }
+.success-title { font-size: 1.4rem; font-weight: bold; color: var(--text-main); margin-bottom: 8px; }
+.success-message { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+
+/* =========================================================
+   RESPONSIF MOBILE (MAX-WIDTH: 640PX)
+   ========================================================= */
+@media (max-width: 640px) {
+    .absensi-content-card { padding: 12px; }
+    .absensi-bottom-bar { position: sticky; bottom: -12px; margin-left: -12px; margin-right: -12px; margin-top: 20px; padding: 16px; background: var(--bg-card); box-shadow: 0 -4px 10px rgba(0,0,0,0.3); border-radius: 0; border-top: 1px solid var(--border-color); border-left: none; border-right: none; border-bottom: none; flex-direction: column; gap: 12px; align-items: stretch; text-align: center; z-index: 50; }
+    .today-date-info { justify-content: center; }
+    .btn-save-absensi { width: 100%; padding: 12px; }
+}
+
+
+/* =========================================================
+   MODIFIKASI KHUSUS PEMBAYARAN
+   ========================================================= */
+
+/* Modal lebih lebar untuk 12 Bulan */
+.modal-md {
+    width: 90%;
+    max-width: 500px;
+}
+
+/* Grid untuk Checkbox Bulan */
+.bulan-options-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
+    gap: 10px; 
+}
+
+@media (max-width: 480px) {
+    .bulan-options-grid { 
+        grid-template-columns: repeat(2, 1fr); /* 2 Kolom di HP */
+    }
+}
+
+.status-option-card.checkbox-mode .status-card-body {
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.status-option-card.checkbox-mode input:checked + .status-card-body { 
+    color: #10b981; 
+    border-color: #10b981; 
+    background: rgba(16, 185, 129, 0.12);
+}
+
+/* Badge Status Pembayaran */
+.badge-status-lunas { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-status-nunggak { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-status-sebagian { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+/* Teks Info Rekap di bawah nama */
+.santri-rekap-counters span b {
+    color: var(--text-main);
+}
+.text-warning { color: #ef4444 !important; }
+.text-success { color: #10b981 !important; }
